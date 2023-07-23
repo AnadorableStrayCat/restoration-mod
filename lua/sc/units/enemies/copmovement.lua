@@ -21,6 +21,8 @@ action_variants.skeleton_swat_titan = security_variant
 action_variants.weekend = security_variant
 action_variants.weekend_dmr = security_variant
 action_variants.weekend_lmg = security_variant
+action_variants.weekend_guard = security_variant
+action_variants.weekend_elite_guard = security_variant
 action_variants.boom = security_variant
 action_variants.fbi_vet = security_variant
 action_variants.spooc_gangster = security_variant
@@ -128,7 +130,18 @@ function CopMovement:post_init()
 	self:add_weapons()
 
 	if self._unit:inventory():is_selection_available(2) then
-		if managers.groupai:state():whisper_mode() or not self._unit:inventory():is_selection_available(1) then
+		if self._unit:inventory():shield_unit() then
+			if self._unit:inventory():is_selection_available(1) then
+				self._unit:inventory():equip_selection(1, true)
+
+				local primary = self._unit:inventory():unit_by_selection(2)
+
+				primary:set_visible(false)
+				primary:set_enabled(false)
+			else
+				self._unit:inventory():equip_selection(2, true)
+			end
+		elseif managers.groupai:state():whisper_mode() or not self._unit:inventory():is_selection_available(1) then
 			self._unit:inventory():equip_selection(2, true)
 		else
 			self._unit:inventory():equip_selection(1, true)
@@ -137,11 +150,10 @@ function CopMovement:post_init()
 		self._unit:inventory():equip_selection(1, true)
 	end
 
-	if self._ext_inventory:equipped_selection() == 2 and managers.groupai:state():whisper_mode() then
+	if not self._unit:inventory():shield_unit() and self._ext_inventory:equipped_selection() == 2 and managers.groupai:state():whisper_mode() then
 		self._ext_inventory:set_weapon_enabled(false)
 	end
 
-	local weap_name = self._ext_base:default_weapon_name(managers.groupai:state():enemy_weapons_hot() and "primary" or "secondary")
 	local fwd = self._m_rot:y()
 	self._action_common_data = {
 		stance = self._stance,
@@ -285,6 +297,12 @@ function CopMovement:_upd_actions(t)
 	end	
 end
 
+Hooks:PreHook(CopMovement, "_upd_stance", "res_upd_stance", function(self, t)
+	if self._suppression.transition and self._suppression.transition.next_upd_t < t or self._stance.transition and self._stance.transition.next_upd_t < t then
+		self._force_head_upd = true -- update head position vector
+	end
+end)
+
 function CopMovement:do_omnia(self)
 	local t = TimerManager:main():time()
 	
@@ -346,8 +364,11 @@ function CopMovement:do_omnia(self)
 							if enemy:contour() then
 								if overheal_mult > 1 then
 									enemy:contour():add("omnia_heal", false)
+									enemy:contour():flash("omnia_heal", 0.2)
+
+									enemy:base():enable_lpf_buff(true)
 								else
-									enemy:contour():add("medic_heal", true)
+									enemy:contour():add("medic_heal", false)
 									enemy:contour():flash("medic_heal", 0.2)
 								end
 							end		
@@ -528,6 +549,10 @@ function CopMovement:play_redirect(redirect_name, at_time)
 
 	return result
 end
+
+Hooks:PostHook(CopMovement, "_change_stance", "res_change_stance", function(self)
+	self._force_head_upd = true -- update head position vector
+end)
 
 local mvec3_set = mvector3.set
 local mvec3_set_z = mvector3.set_z
@@ -742,7 +767,7 @@ function CopMovement:on_suppressed(state)
 		managers.network:session():send_to_peers_synched("suppressed_state", self._unit, state and true or false)
 	end
 
-	self:enable_update()
+	self:enable_update(true)
 end
 
 function CopMovement:synch_attention(attention)
@@ -787,15 +812,6 @@ function CopMovement:anim_clbk_enemy_spawn_melee_item()
 		self._melee_item_unit = World:spawn_unit(unit_name, align_obj_l:position(), align_obj_l:rotation())
 		self._unit:link(align_obj_l:name(), self._melee_item_unit, self._melee_item_unit:orientation_object():name())
 	end
-end
-
-local _equip_item_original = CopMovement._equip_item
-function CopMovement:_equip_item(item_type, align_place, droppable)
-	if item_type == "needle" then
-		align_place = "hand_l"
-	end
-
-	_equip_item_original(self, item_type, align_place, droppable)
 end
 
 function CopMovement:sync_action_act_start(index, blocks_hurt, clamp_to_graph, needs_full_blend, start_rot, start_pos)

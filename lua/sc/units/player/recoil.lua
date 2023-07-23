@@ -15,6 +15,19 @@ local mvec3_rotate_with = mvector3.rotate_with
 local mrot_set_zero = mrotation.set_zero
 local mrot_multiply = mrotation.multiply
 
+--[[
+local old_init = FPCameraPlayerBase.init
+function FPCameraPlayerBase:init( unit )
+	old_init(self, unit)
+	
+	self._view_kick = {
+		velocity = 0,
+		direction = Vector3(),
+		delta = Vector3()
+	}
+end
+--]]
+
 --Add limit constraints to recoil, to allow for recoil to occur with a bipod.
 function FPCameraPlayerBase:_update_movement(t, dt)
 	local data = self._camera_properties
@@ -177,74 +190,130 @@ Hooks:PostHook(FPCameraPlayerBase, "_update_rot", "ResFixBipodADS", function(sel
 	end
 end)
 
-
-
 --Initializes recoil_kick values since they start null.
+local old_start_shooting = FPCameraPlayerBase.start_shooting
 function FPCameraPlayerBase:start_shooting()
-	self._recoil_kick.accumulated = self._recoil_kick.accumulated or 0 --Total amount of recoil to burn through in degrees.
-	self._recoil_kick.h.accumulated = self._recoil_kick.h.accumulated or 0
+	local enable_recoil_recover = restoration.Options:GetValue("OTHER/WeaponHandling/CarpalTunnel") or 1
+	if enable_recoil_recover == 1 then
+		self._recoil_kick.accumulated = self._recoil_kick.accumulated or 0 --Total amount of recoil to burn through in degrees.
+		self._recoil_kick.h.accumulated = self._recoil_kick.h.accumulated or 0
+	else
+		old_start_shooting(self)
+	end
 end
 
---Adds pauses between shots in full auto fire.
---No longer triggers automatic recoil compensation.
-function FPCameraPlayerBase:stop_shooting(wait)
-	self._recoil_wait = wait or 0
+function FPCameraPlayerBase:stop_shooting( wait )
+	local weapon = self._parent_unit:inventory():equipped_unit()
+	local enable_recoil_recover = restoration.Options:GetValue("OTHER/WeaponHandling/CarpalTunnel") or 1
+	local recoil_recover = (enable_recoil_recover and enable_recoil_recover ~= 1 and ((enable_recoil_recover == 3 and 1) or (weapon and weapon:base()._recoil_recovery) or 0.5)) or 0
+
+	if enable_recoil_recover ~= 1 then
+		self._recoil_kick.to_reduce = (self._recoil_kick.accumulated or 0) * recoil_recover
+		self._recoil_kick.h.to_reduce = (self._recoil_kick.h.accumulated or 0) * recoil_recover
+	else
+		self._recoil_kick.current = nil
+		self._recoil_kick.to_reduce = 0
+		self._recoil_kick.h.current = nil
+		self._recoil_kick.h.to_reduce = 0
+	end
+	self._recoil_wait = (wait and wait * ((enable_recoil_recover and enable_recoil_recover == 3 and 3) or 1)) or 0
 end
 
 --Add more recoil to burn through.
 --Also no longer arbitrarily caps vertical recoil.
-function FPCameraPlayerBase:recoil_kick(up, down, left, right)
+function FPCameraPlayerBase:recoil_kick(up, down, left, right, min_h_recoil)
 	local player_state = managers.player:current_state()
 	if player_state == "bipod" then
-		up = up * 0.4
-		down = down * 0.4
-		left = left * 0.4
-		right = right * 0.4
+		up = up * 0.5
+		down = down * 0.5
+		left = left * 0.25
+		right = right * 0.25
 	end
 
 	local v = math.lerp(up, down, math.random())
 	self._recoil_kick.accumulated = (self._recoil_kick.accumulated or 0) + v
 
-	local h = math.lerp(left, right, math.random())
+	local h = math.lerp(left, right, math.random() )
+	local min_h_recoil = min_h_recoil or 0.25
+	h =  h < 0 and math.min( left * min_h_recoil , h ) or math.max( right * min_h_recoil , h )
 	self._recoil_kick.h.accumulated = (self._recoil_kick.h.accumulated or 0) + h
 end
 
---Simplified vanilla function to remove auto-correction weirdness.
 function FPCameraPlayerBase:_vertical_recoil_kick(t, dt)
 	local r_value = 0
-
-	if self._recoil_kick.accumulated and self._episilon < self._recoil_kick.accumulated then
-		local degrees_to_move = 90 * dt --Move camera 90 degrees per second, increased speed over the vanilla 40 to reduce "ghost" recoil
+	local player_state = self._parent_unit:movement():current_state()
+	local weapon = self._parent_unit:inventory():equipped_unit()
+	local center_speed = weapon and weapon:base()._recoil_center_speed or 7.5
+	local enable_recoil_recover = restoration.Options:GetValue("OTHER/WeaponHandling/CarpalTunnel") or 1
+	if enable_recoil_recover and enable_recoil_recover == 3 then
+		center_speed = math.max(center_speed * 0.75, 1)
+	end
+	local recoil_speed = math.max(weapon and weapon:base()._recoil_speed[1] or 80, 0)
+	if player_state and player_state:in_air() then
+		recoil_speed = recoil_speed * 1.25
+	end
+	if enable_recoil_recover == 1 and self._recoil_kick.accumulated and self._episilon < self._recoil_kick.accumulated then
+		local degrees_to_move = 80 * dt --Move camera 80 degrees per second, increased speed over the vanilla 40 to reduce "ghost" recoil
 		r_value = math.min(self._recoil_kick.accumulated, degrees_to_move)
 		self._recoil_kick.accumulated = self._recoil_kick.accumulated - r_value
+	elseif enable_recoil_recover ~= 1 and self._recoil_kick.current and self._recoil_kick.accumulated - ((enable_recoil_recover ~= 1 and self._recoil_kick.current) or 0) > self._episilon then
+		local n = math.step(self._recoil_kick.current, self._recoil_kick.accumulated, recoil_speed  * dt)
+		r_value = n - self._recoil_kick.current
+		self._recoil_kick.current = n
 	elseif self._recoil_wait then
 		self._recoil_wait = self._recoil_wait - dt
 
 		if self._recoil_wait <= 0 then
 			self._recoil_wait = nil
+		end
+	elseif self._recoil_kick.to_reduce then
+		self._recoil_kick.current = nil
+		local n = math.lerp(self._recoil_kick.to_reduce, 0, center_speed * dt)
+		r_value = -(self._recoil_kick.to_reduce - n)
+		self._recoil_kick.to_reduce = n
+		if self._recoil_kick.to_reduce == 0 then
+			self._recoil_kick.to_reduce = nil
 		end
 	end
 
 	return r_value
 end
 
---Simplified vanilla function to remove auto-correction weirdness.
---Also adds more aggressive tracking for horizontal recoil.
 function FPCameraPlayerBase:_horizonatal_recoil_kick(t, dt)
 	local r_value = 0
-
-	if self._recoil_kick.h.accumulated and self._episilon < math.abs(self._recoil_kick.h.accumulated) then
-		local degrees_to_move = 80 * dt --Track horizontal recoil twice as aggressively, since it tends to self compensate unlike vertical recoil.
+	local player_state = self._parent_unit:movement():current_state()
+	local weapon = self._parent_unit:inventory():equipped_unit()
+	local center_speed = weapon and weapon:base()._recoil_center_speed or 7.5
+	local enable_recoil_recover = restoration.Options:GetValue("OTHER/WeaponHandling/CarpalTunnel") or 1
+	if enable_recoil_recover and enable_recoil_recover == 3 then
+		center_speed = math.max(center_speed * 0.75, 1)
+	end
+	local recoil_speed = math.max(weapon and weapon:base()._recoil_speed[2] or 60, 0)
+	if player_state and player_state:in_air() then
+		recoil_speed = recoil_speed * 1.25
+	end
+	if enable_recoil_recover == 1 and self._recoil_kick.h.accumulated and self._episilon < math.abs(self._recoil_kick.h.accumulated) then
+		local degrees_to_move = 60 * dt 
 		r_value = math.min(self._recoil_kick.h.accumulated, degrees_to_move)
 		self._recoil_kick.h.accumulated = self._recoil_kick.h.accumulated - r_value
+	elseif enable_recoil_recover ~= 1 and self._recoil_kick.h.current and math.abs(self._recoil_kick.h.accumulated - ((enable_recoil_recover ~= 1 and self._recoil_kick.h.current) or 0)) > self._episilon then
+		local n = math.step(self._recoil_kick.h.current, self._recoil_kick.h.accumulated, recoil_speed * dt)
+		r_value = n - self._recoil_kick.h.current
+		self._recoil_kick.h.current = n
 	elseif self._recoil_wait then
 		self._recoil_wait = self._recoil_wait - dt
-
-		if self._recoil_wait <= 0 then
+		if 0 > self._recoil_wait then
 			self._recoil_wait = nil
 		end
+	elseif self._recoil_kick.h.to_reduce then
+		self._recoil_kick.h.current = nil
+		local n = math.lerp(self._recoil_kick.h.to_reduce, 0, center_speed * dt)
+		r_value = -(self._recoil_kick.h.to_reduce - n)
+		self._recoil_kick.h.to_reduce = n
+		if self._recoil_kick.h.to_reduce == 0 then
+			self._recoil_kick.h.to_reduce = nil
+		end
 	end
-
 	return r_value
 end
 
@@ -345,7 +414,7 @@ local bezier_values = {
 }
 local bezier_values2 = {
 	0,
-	0.4,
+	0,
 	1,
 	1
 }
@@ -358,6 +427,9 @@ Hooks:PostHook(FPCameraPlayerBase, "_update_stance", "ResFixSecondSight", functi
 		local player_state = managers.player:current_state()
 		local equipped_weapon = self._parent_unit:inventory():equipped_unit()
 		local is_akimbo = equipped_weapon and equipped_weapon:base() and equipped_weapon:base().AKIMBO
+		local speen = equipped_weapon and equipped_weapon:base() and equipped_weapon:base():weapon_tweak_data().speen
+		local ignore_transition_styles = equipped_weapon and equipped_weapon:base() and equipped_weapon:base():weapon_tweak_data().ign_ts
+		local in_full_steelsight = self._parent_movement_ext._current_state._state_data.in_full_steelsight
 
 		if trans_data.duration < elapsed_t then
 			mvector3.set(self._shoulder_stance.translation, trans_data.end_translation)
@@ -373,8 +445,14 @@ Hooks:PostHook(FPCameraPlayerBase, "_update_stance", "ResFixSecondSight", functi
 			end
 		else
 			local progress = elapsed_t / trans_data.duration
-			local progress_smooth = math.bezier(bezier_values, progress)
+			local progress_smooth = math.bezier(speen and bezier_values2 or bezier_values, progress)
 			local in_steelsight = self._parent_movement_ext._current_state:in_steelsight()
+			if equipped_weapon and equipped_weapon:base() then
+				local in_second_sight = equipped_weapon:base():is_second_sight_on()
+				if in_second_sight and in_second_sight == true then
+					self._shoulder_stance.was_in_second_sight = true
+				end
+			end
 			local absolute_progress = nil
 
 			if in_steelsight or self._shoulder_stance.was_in_steelsight then
@@ -388,20 +466,24 @@ Hooks:PostHook(FPCameraPlayerBase, "_update_stance", "ResFixSecondSight", functi
 			mvector3.lerp(self._shoulder_stance.translation, trans_data.start_translation, trans_data.end_translation, progress_smooth)
 
 			self._shoulder_stance.rotation = trans_data.start_rotation:slerp(trans_data.end_rotation, progress_smooth)
-			
-			if restoration and restoration.Options:GetValue("OTHER/ADSTransitionStyle") and restoration.Options:GetValue("OTHER/ADSTransitionStyle") ~= 1 and not is_akimbo then
+
+			if restoration and restoration.Options:GetValue("OTHER/WeaponHandling/ADSTransitionStyle") and restoration.Options:GetValue("OTHER/WeaponHandling/ADSTransitionStyle") ~= 1 and not is_akimbo and not ignore_transition_styles then
 				if player_state and player_state ~= "bipod" and trans_data.absolute_progress and not self._steelsight_swap_state then
-					local prog = 1 - absolute_progress
+					local prog = (1 - absolute_progress) * (dt * 100)
 					if self._shoulder_stance.was_in_steelsight and not in_steelsight then
-						prog = absolute_progress
+						self._shoulder_stance.was_in_steelsight = nil
+						self._shoulder_stance.was_in_second_sight = nil
+						prog = absolute_progress * (dt * 100)
 						trans_data.start_translation = trans_data.start_translation + Vector3(1 * prog, 0.5 * prog, 1 * prog)
 						trans_data.start_rotation = trans_data.start_rotation * Rotation(0 * prog, 0 * prog, 2.5 * prog)
-						self._shoulder_stance.was_in_steelsight = nil
-					elseif in_steelsight then
-						if restoration.Options:GetValue("OTHER/ADSTransitionStyle") == 2 then
+					elseif in_steelsight and in_full_steelsight ~= true then
+						if speen then
+							trans_data.start_translation = trans_data.start_translation + Vector3(0.5 * prog, 0.5 * prog, -0.2 * prog)
+							trans_data.start_rotation = trans_data.start_rotation * Rotation(0 * prog, 0 * prog, 36 * prog)
+						elseif restoration.Options:GetValue("OTHER/WeaponHandling/ADSTransitionStyle") == 2 then
 							trans_data.start_translation = trans_data.start_translation + Vector3(0.5 * prog, 0.5 * prog, -0.2 * prog)
 							trans_data.start_rotation = trans_data.start_rotation * Rotation(0 * prog, 0 * prog, 1.25 * prog)
-						elseif restoration.Options:GetValue("OTHER/ADSTransitionStyle") == 3 then
+						elseif restoration.Options:GetValue("OTHER/WeaponHandling/ADSTransitionStyle") == 3 then
 							trans_data.start_translation = trans_data.start_translation + Vector3(-0.5 * prog, 0.5 * prog, -0.5 * prog)
 							trans_data.start_rotation = trans_data.start_rotation * Rotation(0 * prog, 0 * prog, -1.25 * prog)
 						end
@@ -409,16 +491,6 @@ Hooks:PostHook(FPCameraPlayerBase, "_update_stance", "ResFixSecondSight", functi
 				end
 			end
 
-			if equipped_weapon and equipped_weapon:base() then
-				local in_second_sight = equipped_weapon:base():is_second_sight_on()
-			end
-
-
-			if in_steelsight and trans_data.steelsight_swap_progress_trigger <= absolute_progress then
-				self:_set_steelsight_swap_state(true)
-			elseif (in_steelsight and in_second_sight ~= true) or (not in_steelsight and self._steelsight_swap_state and absolute_progress < trans_data.steelsight_swap_progress_trigger) then
-				self:_set_steelsight_swap_state(false)
-			end
 		end
 	end
 end)

@@ -2,6 +2,8 @@ if not tweak_data then
 	return 
 end
 
+tweak_data.accessibility_colors.screenflash.hit_flash.default = Color(255, 255, 250, 180) / 255
+
 tweak_data.ammo = {}
 tweak_data.ammo.ricochet = {}
 tweak_data.ammo.ricochet.max_ricochets = 5
@@ -19,7 +21,7 @@ tweak_data.ammo.ricochet.autohit = {
 --Swap Speed Multipliers
 --TODO: Move to stat_info
 tweak_data.pistol = {
-	swap_bonus = 1.75,
+	swap_bonus = 1.8,
 	ads_move_speed_mult = 0.8,
 	moving_spread_mult = 0.5,
 	hipfire_spread_mult = 0.75
@@ -31,59 +33,67 @@ tweak_data.bow = {
 }
 tweak_data.crossbow = {
 	swap_bonus = 1,
-	ads_move_speed_mult = 0.45
+	ads_move_speed_mult = 0.5
 }
 	tweak_data.crossbow_pistol = {
-		ads_move_speed_mult = 1.7777,
-		swap_bonus = 1.75
+		ads_move_speed_mult = 1.6,
+		swap_bonus = 1.8
 	}
 
 tweak_data.grenade_launcher = {
-	ads_move_speed_mult = 0.45,
+	ads_move_speed_mult = 0.5,
 }
 	tweak_data.gl_pistol = {
-		ads_move_speed_mult = 1.7777,
-		swap_bonus = 1.75
+		ads_move_speed_mult = 1.6,
+		swap_bonus = 1.8
 	}
 	tweak_data.rocket_launcher = {
-		ads_move_speed_mult = 0.5,
+		ads_move_speed_mult = 0.4, --lowered to 0.2
 	}
 
 tweak_data.shotgun = {
-	ads_move_speed_mult = 0.6,
+	ads_move_speed_mult = 0.45,
+	ads_moving_spread_mult = 3.33333
 }
 	tweak_data.shotgun_pistol = {
-		ads_move_speed_mult = 1.3333,
+		ads_move_speed_mult = 1.777778,
 		swap_bonus = 1.75
 	}
 	tweak_data.flamethrower = {
 		ads_move_speed_mult = 1,
 	}
+		tweak_data.flamethrower_lmg = {
+			ads_move_speed_mult = 0.77778,
+		}
 
 tweak_data.smg = {
-	swap_bonus = 1.25,
+	swap_bonus = 1.2,
 	ads_move_speed_mult = 0.7,
 	moving_spread_mult = 0.6,
 	hipfire_spread_mult = 0.9
 }
 	tweak_data.pdw = {
-		ads_move_speed_mult = 0.6428,
+		ads_move_speed_mult = 0.7142857, --lowered to 0.5
 	}
 	tweak_data.lmg = {
-		swap_bonus = 0.8,
-		ads_move_speed_mult = 0.55,
-		moving_spread_mult = 5,
-		hipfire_spread_mult = 4.4444
+		swap_bonus = 0.83334,
+		ads_move_speed_mult = 0.5, --lowered to 0.35
+		moving_spread_mult = 8.3333,
+		ads_moving_spread_mult = 2.6667,
+		hipfire_spread_mult = 3.8889
 	}
 		tweak_data.wolf_brigade = {
-			hipfire_spread_mult = 0.5
+			hipfire_spread_mult = 0.55
 		}
 	tweak_data.minigun = {
-		swap_bonus = 0.8,
-		ads_move_speed_mult = 0.55,
-		moving_spread_mult = 5,
-		hipfire_spread_mult = 4.4444
+		swap_bonus = 0.83334,
+		ads_move_speed_mult = 0.5, --lowered to 0.35
+		moving_spread_mult = 8.3333,
+		hipfire_spread_mult = 3.8889
 	}
+		tweak_data.sasha = {
+			hipfire_spread_mult = 0.65
+		}
 
 tweak_data.snp = {
 	swap_bonus = 1,
@@ -91,26 +101,38 @@ tweak_data.snp = {
 	hipfire_moving_spread_mult = 2
 }
 	tweak_data.semi_snp = {
-		hipfire_spread_mult = 1.5,
-		hipfire_moving_spread_mult = 1.5
+		hipfire_spread_mult = 2,
+		hipfire_moving_spread_mult = 1.5,
+		ads_move_speed_mult = 0.888889 --lowered to 0.4
+	}
+		tweak_data.s7 = {
+			hipfire_spread_mult = 0.15,
+			hipfire_moving_spread_mult = 0.33334,
+		}
+	tweak_data.amr = {
+		hipfire_spread_mult = 2.5,
+		ads_move_speed_mult = 0.6
 	}
 
 tweak_data.assault_rifle = {
 	swap_bonus = 1,
-	ads_move_speed_mult = 0.45
+	ads_move_speed_mult = 0.45,
+	hipfire_spread_mult = 1.15
 }
 	tweak_data.crb = {
+		hipfire_spread_mult = 0.86956,
 		swap_bonus = 1.1,
-		ads_move_speed_mult = 1.111111
+		ads_move_speed_mult = 1.11111 --raised to 0.5
 	}
 	tweak_data.dmr = {
-		hipfire_spread_mult = 1.5,
-		hipfire_moving_spread_mult = 1.5
+		hipfire_spread_mult = 1.391304,
+		hipfire_moving_spread_mult = 1.5,
+		ads_move_speed_mult = 0.888889 --lowered to 0.4
 	}
 
 tweak_data.akimbo = {
-	swap_bonus = 0.8,
-	ads_move_speed_mult = 0.75,
+	swap_bonus = 0.85,
+	ads_move_speed_mult = 0.8,
 	hipfire_spread_mult = 1.5
 }
 
@@ -183,7 +205,7 @@ for i, proj_id in ipairs(poison_40mm) do
 	tweak_data.projectiles[proj_id].curve_pow = 0
 	tweak_data.projectiles[proj_id].range = 0
 	tweak_data.projectiles[proj_id].poison_gas_range = 600
-	tweak_data.projectiles[proj_id].poison_gas_duration = 16
+	tweak_data.projectiles[proj_id].poison_gas_duration = 10
 	tweak_data.projectiles[proj_id].poison_gas_fade_time = 0.1
 	tweak_data.projectiles[proj_id].poison_gas_tick_time = 0.3
 	tweak_data.projectiles[proj_id].poison_gas_dot_data = {
@@ -222,7 +244,7 @@ tweak_data.projectiles.launcher_poison_arbiter.player_damage = 0
 tweak_data.projectiles.launcher_poison_arbiter.curve_pow = 0
 tweak_data.projectiles.launcher_poison_arbiter.range = 0
 tweak_data.projectiles.launcher_poison_arbiter.poison_gas_range = 600
-tweak_data.projectiles.launcher_poison_arbiter.poison_gas_duration = 12
+tweak_data.projectiles.launcher_poison_arbiter.poison_gas_duration = 8
 tweak_data.projectiles.launcher_poison_arbiter.poison_gas_fade_time = 0.1
 tweak_data.projectiles.launcher_poison_arbiter.poison_gas_tick_time = 0.3
 tweak_data.projectiles.launcher_poison_arbiter.poison_gas_dot_data = {
@@ -277,6 +299,27 @@ tweak_data.projectiles.launcher_electric_osipr = {
 	sound_event = "gl_explode",
 	name_id = "bm_launcher_frag"
 }
+tweak_data.projectiles.launcher_poison_osipr = {
+	launch_speed = 2500,
+	init_timer = 2.5,
+	mass_look_up_modifier = 0,
+	sound_event = "gl_explode",
+	name_id = "bm_launcher_frag",
+	damage = 0,
+	player_damage = 0,
+	curve_pow = 0,
+	range = 0,
+	poison_gas_range = 600,
+	poison_gas_duration = 8,
+	poison_gas_fade_time = 0.1,
+	poison_gas_tick_time = 0.3,
+	poison_gas_dot_data = {
+		hurt_animation_chance = 1,
+		dot_damage = 1.5,
+		dot_length = 6.15,
+		dot_tick_period = 0.5
+	}
+}
 
 --3GL
 tweak_data.projectiles.launcher_frag_ms3gl.damage = 36
@@ -302,7 +345,7 @@ tweak_data.projectiles.launcher_poison.player_damage = 0
 tweak_data.projectiles.launcher_poison.curve_pow = 0
 tweak_data.projectiles.launcher_poison.range = 0
 tweak_data.projectiles.launcher_poison.poison_gas_range = 600
-tweak_data.projectiles.launcher_poison.poison_gas_duration = 8
+tweak_data.projectiles.launcher_poison.poison_gas_duration = 6
 tweak_data.projectiles.launcher_poison.poison_gas_fade_time = 0.1
 tweak_data.projectiles.launcher_poison.poison_gas_tick_time = 0.3
 tweak_data.projectiles.launcher_poison.poison_gas_dot_data = {
@@ -318,7 +361,7 @@ tweak_data.projectiles.launcher_poison_ms3gl_conversion.player_damage = 0
 tweak_data.projectiles.launcher_poison_ms3gl_conversion.curve_pow = 0
 tweak_data.projectiles.launcher_poison_ms3gl_conversion.range = 0
 tweak_data.projectiles.launcher_poison_ms3gl_conversion.poison_gas_range = 600
-tweak_data.projectiles.launcher_poison_ms3gl_conversion.poison_gas_duration = 8
+tweak_data.projectiles.launcher_poison_ms3gl_conversion.poison_gas_duration = 6
 tweak_data.projectiles.launcher_poison_ms3gl_conversion.poison_gas_fade_time = 0.1
 tweak_data.projectiles.launcher_poison_ms3gl_conversion.poison_gas_tick_time = 0.3
 tweak_data.projectiles.launcher_poison_ms3gl_conversion.poison_gas_dot_data = {
@@ -331,37 +374,37 @@ tweak_data.projectiles.launcher_poison_ms3gl_conversion.poison_gas_dot_data = {
 --Plainsrider--
 tweak_data.projectiles.west_arrow.damage = 24
 tweak_data.projectiles.west_arrow_exp.damage = 48
-tweak_data.projectiles.bow_poison_arrow.damage = 20
+tweak_data.projectiles.bow_poison_arrow.damage = 18
 
 --Hunter crossbow--
 tweak_data.projectiles.crossbow_arrow.damage = 24
-tweak_data.projectiles.crossbow_arrow_exp.damage = 48
-tweak_data.projectiles.crossbow_poison_arrow.damage = 20
+tweak_data.projectiles.crossbow_arrow_exp.damage = 36
+tweak_data.projectiles.crossbow_poison_arrow.damage = 18
 
 --Arblast Heavy Crossbow--
 tweak_data.projectiles.arblast_arrow.damage = 36
 tweak_data.projectiles.arblast_arrow_exp.damage = 60
-tweak_data.projectiles.arblast_poison_arrow.damage = 30
+tweak_data.projectiles.arblast_poison_arrow.damage = 24
 
 --Franken fish--
 tweak_data.projectiles.frankish_arrow.damage = 24
 tweak_data.projectiles.frankish_arrow_exp.damage = 48
-tweak_data.projectiles.frankish_poison_arrow.damage = 20
+tweak_data.projectiles.frankish_poison_arrow.damage = 18
 
 --BOWMEN, FORM UP--
 tweak_data.projectiles.long_arrow.damage = 36
 tweak_data.projectiles.long_arrow_exp.damage = 60
-tweak_data.projectiles.long_poison_arrow.damage = 30
+tweak_data.projectiles.long_poison_arrow.damage = 24
 
 --le happy merchant--
 tweak_data.projectiles.ecp_arrow.damage = 18
 tweak_data.projectiles.ecp_arrow_exp.damage = 36
-tweak_data.projectiles.ecp_arrow_poison.damage = 14
+tweak_data.projectiles.ecp_arrow_poison.damage = 12
 
 --The not longbow--
 tweak_data.projectiles.elastic_arrow.damage = 36
 tweak_data.projectiles.elastic_arrow_exp.damage = 60
-tweak_data.projectiles.elastic_arrow_poison.damage = 30
+tweak_data.projectiles.elastic_arrow_poison.damage = 24
 
 --GRENADE OUT--
 tweak_data.projectiles.frag.damage = 80
@@ -387,6 +430,35 @@ tweak_data.projectiles.dada_com.player_damage = 40
 tweak_data.projectiles.dada_com.curve_pow = 0.5
 tweak_data.projectiles.dada_com.range = 500
 
+--SEEEEEEMTEEEEEEEEEEX
+tweak_data.projectiles.sticky_grenade.damage = 80
+tweak_data.projectiles.sticky_grenade.player_damage = 40
+tweak_data.projectiles.sticky_grenade.curve_pow = 0.5
+tweak_data.projectiles.sticky_grenade.range = 400
+tweak_data.projectiles.sticky_grenade.in_air_timer = 3
+tweak_data.projectiles.sticky_grenade.detonate_timer = 3 --unused
+tweak_data.projectiles.sticky_grenade.warning_data = {
+	play_when_attached = true,
+	beep_speeds = {
+		0.1,
+		0.025
+	},
+	sound_data = {
+		event_name = "grenade_sticky_beep",
+		event_stop_name = "grenade_sticky_beep_stop"
+	},
+	light_data = {
+		type_str = "omni|specular",
+		range = 1250,
+		beep_mul = 0.2,
+		falloff_exp = 0.5,
+		beep_fade_speed = 3.5,
+		specular_mul = 0.05,
+		link_to_unit = true,
+		color = Vector3(255, 255, 0)
+	}
+}
+
 --Molliest of tovs--
 tweak_data.projectiles.molotov.damage = 3
 tweak_data.projectiles.molotov.player_damage = 3
@@ -407,28 +479,34 @@ tweak_data.blackmarket.projectiles.fir_com.impact_detonation = false
 
 --Throwing Card--
 tweak_data.projectiles.wpn_prj_ace.damage = 24
-tweak_data.projectiles.wpn_prj_ace.launch_speed = 1800
 tweak_data.projectiles.wpn_prj_ace.adjust_z = 0
 
 --Shuriken
 tweak_data.projectiles.wpn_prj_four.damage = 20
-tweak_data.projectiles.wpn_prj_four.launch_speed = 1800
 tweak_data.projectiles.wpn_prj_four.adjust_z = 0
 
 --Throwing Knife--
 tweak_data.projectiles.wpn_prj_target.damage = 24
-tweak_data.projectiles.wpn_prj_target.launch_speed = 1800
 tweak_data.projectiles.wpn_prj_target.adjust_z = 0
 
 --Javelin--
 tweak_data.projectiles.wpn_prj_jav.damage = 36
-tweak_data.projectiles.wpn_prj_jav.launch_speed = 1800
 tweak_data.projectiles.wpn_prj_jav.adjust_z = 0
 
 --Throwing axe--
 tweak_data.projectiles.wpn_prj_hur.damage = 36
-tweak_data.projectiles.wpn_prj_hur.launch_speed = 1800
 tweak_data.projectiles.wpn_prj_hur.adjust_z = 0
+
+--Balled Snow--
+if tweak_data.projectiles.xmas_snowball then
+	tweak_data.projectiles.xmas_snowball.damage = 24
+	tweak_data.projectiles.xmas_snowball.player_dmg_mul = 0
+	tweak_data.projectiles.xmas_snowball.camera_shake_max_mul = 0
+	tweak_data.projectiles.xmas_snowball.feedback_range = -100
+	tweak_data.projectiles.xmas_snowball.curve_pow = 0.05
+	tweak_data.projectiles.xmas_snowball.range = 100
+	tweak_data.projectiles.xmas_snowball.adjust_z = 0
+end
 
 --ZAPper grenade
 tweak_data.projectiles.wpn_gre_electric.damage = 40
@@ -443,7 +521,7 @@ tweak_data.projectiles.poison_gas_grenade.curve_pow = 0
 tweak_data.projectiles.poison_gas_grenade.range = 0
 tweak_data.projectiles.poison_gas_grenade.name_id = "bm_poison_gas_grenade"
 tweak_data.projectiles.poison_gas_grenade.poison_gas_range = 600
-tweak_data.projectiles.poison_gas_grenade.poison_gas_duration = 20
+tweak_data.projectiles.poison_gas_grenade.poison_gas_duration = 12
 tweak_data.projectiles.poison_gas_grenade.poison_gas_fade_time = 0.1
 tweak_data.projectiles.poison_gas_grenade.poison_gas_tick_time = 0.3
 tweak_data.projectiles.poison_gas_grenade.poison_gas_dot_data = {
@@ -591,53 +669,164 @@ for i, proj_id in ipairs(velocity) do
 end
 tweak_data.projectiles.rocket_frag.launch_speed = 30000 * velocity_mult
 
-velocity_mult = 0.65
+velocity_mult = 0.8
 velocity = {
-	'west_arrow','bow_poison_arrow','west_arrow_exp',
-	'crossbow_arrow','crossbow_poison_arrow','crossbow_arrow_exp',
-	'frankish_arrow','frankish_poison_arrow','frankish_arrow_exp'
+	'west_arrow',
+	'crossbow_arrow',
+	'frankish_arrow'
 }
 for i, proj_id in ipairs(velocity) do
-	tweak_data.projectiles[proj_id].launch_speed = 3800 * velocity_mult
+	tweak_data.projectiles[proj_id].launch_speed = 3500 * velocity_mult
 	tweak_data.projectiles[proj_id].adjust_z = tweak_data.projectiles[proj_id].launch_speed / 100 * velocity_mult
 	tweak_data.projectiles[proj_id].mass_look_up_modifier = 0
 end
-velocity = {
-	'long_arrow','long_poison_arrow','long_arrow_exp',
-	'arblast_arrow','arblast_poison_arrow','arblast_arrow_exp'
-}
-for i, proj_id in ipairs(velocity) do
-	tweak_data.projectiles[proj_id].launch_speed = 5500 * velocity_mult
-	tweak_data.projectiles[proj_id].adjust_z = tweak_data.projectiles[proj_id].launch_speed / 100 * velocity_mult
-	tweak_data.projectiles[proj_id].mass_look_up_modifier = 0
-end
-velocity = {
-	'elastic_arrow','elastic_arrow_poison','elastic_arrow_exp',
-	'ecp_arrow','ecp_arrow_poison','ecp_arrow_exp'
-}
-for i, proj_id in ipairs(velocity) do
-	tweak_data.projectiles[proj_id].launch_speed = 8000 * velocity_mult
-	tweak_data.projectiles[proj_id].adjust_z = tweak_data.projectiles[proj_id].launch_speed / 100 * velocity_mult
-	tweak_data.projectiles[proj_id].mass_look_up_modifier = 0
-end
+	velocity = {
+		'bow_poison_arrow',
+		'crossbow_poison_arrow',
+		'frankish_poison_arrow'
+	}
+	for i, proj_id in ipairs(velocity) do
+		tweak_data.projectiles[proj_id].launch_speed = 3500 * velocity_mult * 0.85
+		tweak_data.projectiles[proj_id].adjust_z = tweak_data.projectiles[proj_id].launch_speed / 100 * velocity_mult
+		tweak_data.projectiles[proj_id].mass_look_up_modifier = 0
+	end
+	velocity = {
+		'west_arrow_exp',
+		'crossbow_arrow_exp',
+		'frankish_arrow_exp'
+	}
+	for i, proj_id in ipairs(velocity) do
+		tweak_data.projectiles[proj_id].launch_speed = 3500 * velocity_mult * 0.45
+		tweak_data.projectiles[proj_id].adjust_z = tweak_data.projectiles[proj_id].launch_speed / 100 * velocity_mult
+		tweak_data.projectiles[proj_id].mass_look_up_modifier = 0
+	end
 
 velocity = {
-	'frag','frag_com','dada_com','fir_com','wpn_gre_electric','concussion','poison_gas_grenade',
+	'long_arrow',
+	'arblast_arrow'
+}
+for i, proj_id in ipairs(velocity) do
+	tweak_data.projectiles[proj_id].launch_speed = 6500 * velocity_mult
+	tweak_data.projectiles[proj_id].adjust_z = tweak_data.projectiles[proj_id].launch_speed / 100 * velocity_mult
+	tweak_data.projectiles[proj_id].mass_look_up_modifier = 0
+end
+	velocity = {
+		'long_poison_arrow',
+		'arblast_poison_arrow'
+	}
+	for i, proj_id in ipairs(velocity) do
+		tweak_data.projectiles[proj_id].launch_speed = 6500 * velocity_mult * 0.85
+		tweak_data.projectiles[proj_id].adjust_z = tweak_data.projectiles[proj_id].launch_speed / 100 * velocity_mult
+		tweak_data.projectiles[proj_id].mass_look_up_modifier = 0
+	end
+	velocity = {
+		'long_arrow_exp',
+		'arblast_arrow_exp'
+	}
+	for i, proj_id in ipairs(velocity) do
+		tweak_data.projectiles[proj_id].launch_speed = 6500 * velocity_mult * 0.45
+		tweak_data.projectiles[proj_id].adjust_z = tweak_data.projectiles[proj_id].launch_speed / 100 * velocity_mult
+		tweak_data.projectiles[proj_id].mass_look_up_modifier = 0
+	end
+
+velocity = {
+	'elastic_arrow',
+	'ecp_arrow'
+}
+for i, proj_id in ipairs(velocity) do
+	tweak_data.projectiles[proj_id].launch_speed = 9500 * velocity_mult
+	tweak_data.projectiles[proj_id].adjust_z = tweak_data.projectiles[proj_id].launch_speed / 100 * velocity_mult
+	tweak_data.projectiles[proj_id].mass_look_up_modifier = 0
+end
+	velocity = {
+		'elastic_arrow_poison',
+		'ecp_arrow_poison'
+	}
+	for i, proj_id in ipairs(velocity) do
+		tweak_data.projectiles[proj_id].launch_speed = 9500 * velocity_mult * 0.85
+		tweak_data.projectiles[proj_id].adjust_z = tweak_data.projectiles[proj_id].launch_speed / 100 * velocity_mult
+		tweak_data.projectiles[proj_id].mass_look_up_modifier = 0
+	end
+	velocity = {
+		'elastic_arrow_exp',
+		'ecp_arrow_exp'
+	}
+	for i, proj_id in ipairs(velocity) do
+		tweak_data.projectiles[proj_id].launch_speed = 9500 * velocity_mult * 0.45
+		tweak_data.projectiles[proj_id].adjust_z = tweak_data.projectiles[proj_id].launch_speed / 100 * velocity_mult
+		tweak_data.projectiles[proj_id].mass_look_up_modifier = 0
+	end
+
+velocity = {
+	'frag','frag_com','dada_com','fir_com','wpn_gre_electric','concussion','poison_gas_grenade','sticky_grenade',
 	'dynamite','molotov'
 }
+--[[
 for i, proj_id in ipairs(velocity) do
 	tweak_data.projectiles[proj_id].launch_speed = 900
 	tweak_data.projectiles[proj_id].adjust_z = 50
 	tweak_data.projectiles[proj_id].mass_look_up_modifier = 0
 end
+tweak_data.projectiles.dynamite.launch_speed = 600
 tweak_data.projectiles.molotov.launch_speed = 700
+--]]
+for i, proj_id in ipairs(velocity) do
+	tweak_data.projectiles[proj_id].launch_speed = 250
+	tweak_data.projectiles[proj_id].adjust_z = 15
+	tweak_data.projectiles[proj_id].mass_look_up_modifier = 3.25
+end
+tweak_data.projectiles.dynamite.launch_speed = 150
+tweak_data.projectiles.sticky_grenade.launch_speed = 225
+tweak_data.projectiles.molotov.launch_speed = 200
 velocity = {
-	'wpn_prj_ace','wpn_prj_four','wpn_prj_target',
-	'wpn_prj_hur','wpn_prj_jav'
+	'wpn_prj_ace','wpn_prj_four',
 }
 for i, proj_id in ipairs(velocity) do
-	tweak_data.projectiles[proj_id].adjust_z = 50
-	tweak_data.projectiles[proj_id].mass_look_up_modifier = 0
+	if tweak_data.projectiles[proj_id] then
+		tweak_data.projectiles[proj_id].launch_speed = 1500
+		tweak_data.projectiles[proj_id].adjust_z = 50
+		tweak_data.projectiles[proj_id].mass_look_up_modifier = 0
+	end
+end
+velocity = {
+	'wpn_prj_target'
+}
+for i, proj_id in ipairs(velocity) do
+	if tweak_data.projectiles[proj_id] then
+		tweak_data.projectiles[proj_id].launch_speed = 2500
+		tweak_data.projectiles[proj_id].adjust_z = 50
+		tweak_data.projectiles[proj_id].mass_look_up_modifier = 0
+	end
+end
+velocity = {
+	'wpn_prj_hur'
+}
+for i, proj_id in ipairs(velocity) do
+	if tweak_data.projectiles[proj_id] then
+		tweak_data.projectiles[proj_id].launch_speed = 1800
+		tweak_data.projectiles[proj_id].adjust_z = 50
+		tweak_data.projectiles[proj_id].mass_look_up_modifier = 0
+	end
+end
+velocity = {
+	'wpn_prj_jav'
+}
+for i, proj_id in ipairs(velocity) do
+	if tweak_data.projectiles[proj_id] then
+		tweak_data.projectiles[proj_id].launch_speed = 2500
+		tweak_data.projectiles[proj_id].adjust_z = 50
+		tweak_data.projectiles[proj_id].mass_look_up_modifier = 0
+	end
+end
+velocity = {
+	'xmas_snowball'
+}
+for i, proj_id in ipairs(velocity) do
+	if tweak_data.projectiles[proj_id] then
+		tweak_data.projectiles[proj_id].launch_speed = 1000
+		tweak_data.projectiles[proj_id].adjust_z = 50
+		tweak_data.projectiles[proj_id].mass_look_up_modifier = 0
+	end
 end
 
 
@@ -747,13 +936,6 @@ tweak_data.casino = {
 	infamous_chance = 3
 }	
 
-tweak_data.money_manager.weapon_cost = {}
-local cost = 42000
-for i = 1, 10000, 1 do
-	table.insert( tweak_data.money_manager.weapon_cost, tostring(cost) )
-	cost = cost + 23000
-end
-
 tweak_data.experience_manager.stage_failed_multiplier = 0.5
 -- From update 34
 tweak_data.experience_manager.stage_completion = {
@@ -794,7 +976,7 @@ local dyslexia = { --for reference, I actually am diagnosed with Dyslexia
 		primaries = {
 			{ "pistol" },
 
-			{ "smg" },
+			{ "lmg" },
 
 			{ "shotgun" },
 
@@ -805,7 +987,7 @@ local dyslexia = { --for reference, I actually am diagnosed with Dyslexia
 		secondaries = {
 			{ "pistol" },
 
-			{ "smg" },
+			{ "lmg" },
 
 			{ "shotgun" },
 
@@ -815,65 +997,83 @@ local dyslexia = { --for reference, I actually am diagnosed with Dyslexia
 		}
 	},
 	[2] = {
-		primaries = {
-			{ "light_pis" },
-			{ "heavy_pis" },
-			
-			{ "light_smg" },
-			{ "heavy_smg" },
-
-			{ "light_shot" },
-			{ "heavy_shot" },
-			{ "break_shot" },
-			
-			{ "light_ar" },
-			{ "heavy_ar" },
-			{ "dmr_ar" },
-
-			{ "light_snp" },
-			{ "heavy_snp" },
-			{ "antim_snp" },
-			
-			{ "light_mg" },
-			{ "heavy_mg" },
-			{ "miniguns" },
-		
-			{ "wpn_special" }
-		},
-		secondaries = {
-			{ "light_pis" },
-			{ "heavy_pis" },
-			
-			{ "light_smg" },
-			{ "heavy_smg" },
-			
-			{ "light_shot" },
-			{ "heavy_shot" },
-			{ "break_shot" },
-			
-			{ "light_ar" },
-			{ "heavy_ar" },
-
-			{ "light_snp" },
-			
-			{ "wpn_special" }
-		}
+		primaries = {},
+		secondaries = {}
 	}
 }
 
-if restoration.Options:GetValue("OTHER/WpnCat") then
-	tweak_data.gui.buy_weapon_categories = dyslexia[restoration.Options:GetValue("OTHER/WpnCat")]
+if restoration.Options:GetValue("OTHER/WpnCat") == 1 then
+	for i, weap in pairs(tweak_data.weapon) do
+		local is_secondary = weap.use_data and weap.use_data.selection_index and weap.use_data.selection_index == 2
+		if is_secondary and weap.recategorize and weap.recategorize[1] == "unsupported" then
+			table.insert(dyslexia[1].primaries, { "unsupported" })
+			break
+		end
+	end
+	for i, weap in pairs(tweak_data.weapon) do
+		local is_secondary = weap.use_data and weap.use_data.selection_index and weap.use_data.selection_index == 1
+		if is_secondary and weap.recategorize and weap.recategorize[1] == "unsupported" then
+			table.insert(dyslexia[1].secondaries, { "unsupported" })
+			break
+		end
+	end
+elseif restoration.Options:GetValue("OTHER/WpnCat") == 2 then
+	--PRIMARIES
+	table.insert(dyslexia[2].primaries, { "light_pis" })
+	table.insert(dyslexia[2].primaries, { "heavy_pis" })	
+	table.insert(dyslexia[2].primaries, { "light_smg" })
+	table.insert(dyslexia[2].primaries, { "heavy_smg" })
+	table.insert(dyslexia[2].primaries, { "light_shot" })
+	table.insert(dyslexia[2].primaries, { "heavy_shot" })
+	table.insert(dyslexia[2].primaries, { "break_shot" })	
+	table.insert(dyslexia[2].primaries, { "light_ar" })
+	table.insert(dyslexia[2].primaries, { "heavy_ar" })
+	table.insert(dyslexia[2].primaries, { "dmr_ar" })
+	table.insert(dyslexia[2].primaries, { "light_snp" })
+	table.insert(dyslexia[2].primaries, { "heavy_snp" })
+	table.insert(dyslexia[2].primaries, { "antim_snp" })		
+	table.insert(dyslexia[2].primaries, { "light_mg" })
+	table.insert(dyslexia[2].primaries, { "heavy_mg" })
+	table.insert(dyslexia[2].primaries, { "miniguns" })
+	table.insert(dyslexia[2].primaries, { "wpn_special" })
+	for i, weap in pairs(tweak_data.weapon) do
+		local is_secondary = weap.use_data and weap.use_data.selection_index and weap.use_data.selection_index == 2
+		if is_secondary and weap.recategorize and weap.recategorize[1] == "unsupported" then
+			table.insert(dyslexia[2].primaries, { "unsupported" })
+			break
+		end
+	end
+	--SECONDARIES
+	table.insert(dyslexia[2].secondaries, { "light_pis" })
+	table.insert(dyslexia[2].secondaries, { "heavy_pis" })
+	table.insert(dyslexia[2].secondaries, { "light_smg" })
+	table.insert(dyslexia[2].secondaries, { "heavy_smg" })
+	table.insert(dyslexia[2].secondaries, { "light_shot" })
+	table.insert(dyslexia[2].secondaries, { "heavy_shot" })
+	table.insert(dyslexia[2].secondaries, { "break_shot" })
+	table.insert(dyslexia[2].secondaries, { "light_ar" })
+	table.insert(dyslexia[2].secondaries, { "heavy_ar" })
+	for i, weap in pairs(tweak_data.weapon) do
+		local is_secondary = weap.use_data and weap.use_data.selection_index and weap.use_data.selection_index == 1
+		if is_secondary and weap.recategorize and weap.recategorize[1] == "dmr_ar" then
+			table.insert(dyslexia[2].secondaries, { "dmr_ar" })
+			break
+		end
+	end
+	table.insert(dyslexia[2].secondaries, { "light_snp" })
+	table.insert(dyslexia[2].secondaries, { "heavy_snp" })
+	table.insert(dyslexia[2].secondaries, { "wpn_special" })
+	for i, weap in pairs(tweak_data.weapon) do
+		local is_secondary = weap.use_data and weap.use_data.selection_index and weap.use_data.selection_index == 1
+		if is_secondary and weap.recategorize and weap.recategorize[1] == "unsupported" then
+			table.insert(dyslexia[2].secondaries, { "unsupported" })
+			break
+		end
+	end
 end
 
---[[
-	if SystemFS:exists("assets/mod_overrides/Marlin Model 1894 Custom/main.xml") or SystemFS:exists("assets/mod_overrides/Mosin Nagant M9130 Obrez/main.xml") then
-		table.insert(tweak_data.gui.buy_weapon_categories.secondaries, {"snp"})
-	end		
+tweak_data.gui.buy_weapon_categories = dyslexia[restoration.Options:GetValue("OTHER/WpnCat") or 1]
 
-	if SystemFS:exists("assets/mod_overrides/Volmer HK51-B/main.xml") then
-		table.insert(tweak_data.gui.buy_weapon_categories.secondaries, {"lmg"})
-	end		
-]]	
 
 --Sounds of Animals Fighting--
 local animal_fight = {
@@ -1027,15 +1227,340 @@ local blight = {
 }
 table.insert(tweak_data.achievement.complete_heist_achievements, blight)
 
-tweak_data.player.stances.msr.steelsight.shakers.breathing.amplitude = 0
-tweak_data.player.stances.r93.steelsight.shakers.breathing.amplitude = 0
-tweak_data.player.stances.m95.steelsight.shakers.breathing.amplitude = 0
-tweak_data.player.stances.mosin.steelsight.shakers.breathing.amplitude = 0
-tweak_data.player.stances.winchester1874.steelsight.shakers.breathing.amplitude = 0
-tweak_data.player.stances.wa2000.steelsight.shakers.breathing.amplitude = 0
-tweak_data.player.stances.model70.steelsight.shakers.breathing.amplitude = 0
-tweak_data.player.stances.tti.steelsight.shakers.breathing.amplitude = 0
-tweak_data.player.stances.siltstone.steelsight.shakers.breathing.amplitude = 0
-tweak_data.player.stances.r700.steelsight.shakers.breathing.amplitude = 0
-tweak_data.player.stances.sbl.steelsight.shakers.breathing.amplitude = 0
-tweak_data.player.stances.desertfox.steelsight.shakers.breathing.amplitude = 0
+local twp = tweak_data.player
+local pivot_shoulder_translation
+local pivot_shoulder_rotation
+local pivot_head_translation
+local pivot_head_rotation
+--Can't get this shit to work in PlayerTweakData
+if twp.stances.m6d then
+	pivot_shoulder_translation = Vector3(8.47169, 40.6363, -2.73086)
+	pivot_shoulder_rotation = Rotation(0.100026, -0.68821, 0.629665)
+	pivot_head_translation = Vector3(4.5, 28, -6.25)
+	pivot_head_rotation = Rotation(0, 0, 0)
+	twp.stances.m6d.standard.shoulders.translation = pivot_head_translation - pivot_shoulder_translation:rotate_with(pivot_shoulder_rotation:inverse()):rotate_with(pivot_head_rotation)
+	twp.stances.m6d.standard.shoulders.rotation = pivot_head_rotation * pivot_shoulder_rotation:inverse()
+	pivot_head_translation = Vector3(-0.02, 35, 0.25)
+	pivot_head_rotation = Rotation(0, 0.5, 0)
+	twp.stances.m6d.steelsight.shoulders.translation = pivot_head_translation - pivot_shoulder_translation:rotate_with(pivot_shoulder_rotation:inverse()):rotate_with(pivot_head_rotation)
+	twp.stances.m6d.steelsight.shoulders.rotation = pivot_head_rotation * pivot_shoulder_rotation:inverse()
+	pivot_head_translation = Vector3(4.25, 26, -6.25)
+	pivot_head_rotation = Rotation(0, 0, 0)
+	twp.stances.m6d.crouched.shoulders.translation = pivot_head_translation - pivot_shoulder_translation:rotate_with(pivot_shoulder_rotation:inverse()):rotate_with(pivot_head_rotation)
+	twp.stances.m6d.crouched.shoulders.rotation = pivot_head_rotation * pivot_shoulder_rotation:inverse()
+end
+
+if twp.stances.papa320 then
+	pivot_shoulder_translation = Vector3(8.45416, 39.1301, -4.58611)
+	pivot_shoulder_rotation = Rotation(0.100083, -0.688408, 0.630516)
+	pivot_head_translation = Vector3(1.5, 28, -5)
+	pivot_head_rotation = Rotation(0, 0.2, -6)
+	twp.stances.papa320.standard.shoulders.translation = pivot_head_translation - pivot_shoulder_translation:rotate_with(pivot_shoulder_rotation:inverse()):rotate_with(pivot_head_rotation)
+	twp.stances.papa320.standard.shoulders.rotation = pivot_head_rotation * pivot_shoulder_rotation:inverse()
+	pivot_head_translation = Vector3(0.2, 25, -5)
+	pivot_head_rotation = Rotation(0, 0.2, -10)
+	twp.stances.papa320.crouched.shoulders.translation = pivot_head_translation - pivot_shoulder_translation:rotate_with(pivot_shoulder_rotation:inverse()):rotate_with(pivot_head_rotation)
+	twp.stances.papa320.crouched.shoulders.rotation = pivot_head_rotation * pivot_shoulder_rotation:inverse()
+	pivot_head_translation = Vector3(0, 37, -0.2)
+	pivot_head_rotation = Rotation(0, 0, 0)
+	twp.stances.papa320.steelsight.shoulders.translation = pivot_head_translation - pivot_shoulder_translation:rotate_with(pivot_shoulder_rotation:inverse()):rotate_with(pivot_head_rotation)
+	twp.stances.papa320.steelsight.shoulders.rotation = pivot_head_rotation * pivot_shoulder_rotation:inverse()
+end
+
+
+local twf = tweak_data.weapon.factory --ugly fuckin fix but I just could not get this to work otherwise
+function WeaponFactoryTweakData:_clone_part_type_for_weapon_resmod(part_type, factory_id, amount)
+	local factory_data = twf[factory_id]
+	local parts = {}
+	local part_data = nil
+
+	for _, part_id in ipairs(factory_data.uses_parts) do
+		part_data = twf.parts[part_id]
+
+		if part_data.type == part_type then
+			table.insert(parts, part_id)
+		end
+	end
+
+	for _, part_id in ipairs(parts) do
+		twf:_clone_part_for_weapon(part_id, factory_id, amount)
+	end
+end
+twf:_clone_part_type_for_weapon_resmod("barrel_ext", "wpn_fps_ass_tkb", 2)
+
+if BeardLib then
+	local modded_perk_deck = false
+	--Global perk deck cards
+		local deck2 = {
+			upgrades = {
+				"weapon_passive_headshot_damage_multiplier",
+				"weapon_passive_damage_multiplier_1",
+				"player_non_special_melee_multiplier_1", --This bonus doesn't actually do anything, but it is what's displayed in menus.
+				"player_melee_damage_multiplier_1"
+			},
+			cost = 0,
+			icon_xy = {1, 0},
+			name_id = "menu_deckall_2",
+			desc_id = "menu_deckall_2_desc_sc"
+		}
+		local deck4 = {
+			upgrades = {
+				"passive_player_xp_multiplier_1",
+				"player_passive_suspicion_bonus",
+				"player_passive_armor_movement_penalty_multiplier",
+				"weapon_passive_damage_multiplier_2",
+				"player_non_special_melee_multiplier_2",
+				"player_melee_damage_multiplier_2"			
+			},
+			cost = 0,
+			icon_xy = {3, 0},
+			name_id = "menu_deckall_4",
+			desc_id = "menu_deckall_4_desc_sc"
+		}
+		local deck6 = {
+			upgrades = {
+				"armor_kit",
+				"weapon_passive_damage_multiplier_3",
+				"player_non_special_melee_multiplier_3",
+				"player_melee_damage_multiplier_3"			
+			},
+			cost = 0,
+			icon_xy = {5, 0},
+			name_id = "menu_deckall_6",
+			desc_id = "menu_deckall_6_desc_sc"
+		}
+		local deck8 = {
+			upgrades = {
+				"weapon_passive_damage_multiplier_4",
+				"passive_doctor_bag_interaction_speed_multiplier",
+				"player_non_special_melee_multiplier_4",
+				"player_melee_damage_multiplier_4"
+			},
+			cost = 0,
+			icon_xy = {7, 0},
+			name_id = "menu_deckall_8",
+			desc_id = "menu_deckall_8_desc_sc"
+		}
+
+	if BeardLib.Utils:FindMod("Mercenary Perk Deck") then
+		modded_perk_deck = true
+		local kmerc_deck = {
+			name_id = "menu_deck_kmerc_title",
+			desc_id = "menu_deck_kmerc_desc",
+			category = {
+				"mod"
+			},
+			{
+				name_id = "menu_deck_kmerc_1",
+				desc_id = "menu_deck_kmerc_1_desc_sc",
+				cost = 0,
+				upgrades = {
+					"player_kmerc_reactive_absorption",
+					"player_kmerc_passive_health_multiplier_1"
+				},
+				texture_bundle_folder = "kmerc",
+				icon_xy = {
+					0,
+					0
+				}
+			},
+			deck2,
+			{
+				name_id = "menu_deck_kmerc_3",
+				desc_id = "menu_deck_kmerc_3_desc_sc",
+				cost = 0,
+				upgrades = {
+					"player_kmerc_reload_speed_bonus_per_max_armor",
+					"player_kmerc_swap_speed_bonus_per_max_armor",
+					"player_tier_armor_multiplier_1"
+				},
+				texture_bundle_folder = "kmerc",
+				icon_xy = {1,0}
+			},
+			deck4,
+			{
+				name_id = "menu_deck_kmerc_5",
+				desc_id = "menu_deck_kmerc_5_desc_sc",
+				cost = 0,
+				upgrades = {
+					"player_kmerc_fatal_triggers_invuln",
+					"player_kmerc_passive_health_multiplier_2"
+				},
+				texture_bundle_folder = "kmerc",
+				icon_xy = {
+					2,
+					0
+				}
+			},
+			deck6,
+			{
+				name_id = "menu_deck_kmerc_7",
+				desc_id = "menu_deck_kmerc_7_desc_sc",
+				cost = 0,
+				upgrades = {
+					"player_kmerc_armored_hot"
+				},
+				texture_bundle_folder = "kmerc",
+				icon_xy = {
+					3,
+					0
+				}
+			},
+			deck8,
+			{
+				name_id = "menu_deck_kmerc_9",
+				desc_id = "menu_deck_kmerc_9_desc_sc",
+				cost = 0,
+				upgrades = {
+					"player_kmerc_bloody_armor"
+				},
+				texture_bundle_folder = "kmerc",
+				icon_xy = {
+					0,
+					1
+				}
+			}
+		}	
+
+		for i, k in pairs(tweak_data.skilltree.specializations) do 
+			if tweak_data.skilltree.specializations[i].name_id and tweak_data.skilltree.specializations[i].name_id == "menu_deck_kmerc_title" then
+				tweak_data.skilltree.specializations[i] = kmerc_deck
+			end
+		end
+	end
+	if BeardLib.Utils:FindMod("Liberator Perk Deck") then
+		modded_perk_deck = true
+		local silence_deck = {
+			name_id = "menu_deck_liberator_title",
+			desc_id = "menu_deck_liberator_desc",
+			category = {
+				"mod",
+				"activated"
+			},
+			{
+				upgrades = {
+					"tachi", --unlocks throwable
+					"player_tachi_base", --base throwable stats (number of charges, cooldown speed etc)
+					"player_tachi_restore_health_1",
+					"player_tachi_restore_stamina_1",
+					"player_tachi_hot_amount_1",
+					"player_tachi_hot_duration_1"
+				},
+				cost = 0,
+				icon_xy = {0, 0},
+				texture_bundle_folder = "liberator",
+				name_id = "menu_deck_liberator_1",
+				desc_id = "menu_deck_liberator_1_desc_sc"
+			},
+			deck2,
+			{
+				upgrades = {
+					"player_tachi_hot_duration_2",
+					"player_tachi_hot_cancelled_damage_resistance_consolation"
+				},
+				cost = 0,
+				icon_xy = {1,0},
+				texture_bundle_folder = "liberator",
+				name_id = "menu_deck_liberator_3",
+				desc_id = "menu_deck_liberator_3_desc_sc"
+			},
+			deck4,
+			{
+				upgrades = {
+					"player_tachi_hot_amount_2",
+					"player_tachi_restore_stamina_2",
+					"player_passive_dodge_chance_1"
+				},
+				cost = 0,
+				icon_xy = {2, 0},
+				texture_bundle_folder = "liberator",
+				name_id = "menu_deck_liberator_5",
+				desc_id = "menu_deck_liberator_5_desc_sc"
+			},
+			deck6,
+			{
+				upgrades = {
+					"player_passive_health_multiplier_1",
+					"player_passive_health_multiplier_2",
+					"player_tachi_hot_duration_3"
+				},
+				cost = 0,
+				icon_xy = {3, 0},
+				texture_bundle_folder = "liberator",
+				name_id = "menu_deck_liberator_7",
+				desc_id = "menu_deck_liberator_7_desc_sc"
+			},
+			deck8,
+			{
+				upgrades = {
+					"player_tachi_hot_amount_3"
+				},
+				cost = 0,
+				icon_xy = {0,1},
+				texture_bundle_folder = "liberator",
+				name_id = "menu_deck_liberator_9",
+				desc_id = "menu_deck_liberator_9_desc_sc"
+			}
+		}
+
+		for i, k in pairs(tweak_data.skilltree.specializations) do 
+			if tweak_data.skilltree.specializations[i].name_id and tweak_data.skilltree.specializations[i].name_id == "menu_deck_liberator_title" then
+				tweak_data.skilltree.specializations[i] = silence_deck
+			end
+		end
+
+		tweak_data.blackmarket.projectiles.tachi = {
+			name_id = "bm_tachi",
+			desc_id = "bm_tachi_desc",
+			ability = "tachi",
+			custom = true,
+			ignore_statistics = true,
+			based_on = "chico_injector",
+			texture_bundle_folder = "liberator",
+			icon = "chico_injector",
+			max_amount = 1,
+			base_cooldown = 30,
+			sounds = {
+				activate = "perkdeck_activate",
+				cooldown = "perkdeck_cooldown_over"
+			}
+		}
+	end
+
+	if modded_perk_deck then
+		tweak_data.skilltree.specialization_category = {
+			{
+				name_id = "menu_st_category_all",
+				category = "all"
+			},
+			{
+				name_id = "menu_st_category_offensive",
+				category = "offensive"
+			},
+			{
+				name_id = "menu_st_category_defensive",
+				category = "defensive"
+			},
+			{
+				name_id = "menu_st_category_supportive",
+				category = "supportive"
+			},
+			{
+				name_id = "menu_st_category_activated",
+				category = "activated"
+			},
+			{
+				name_id = "menu_st_category_challenge",
+				category = "challenge"
+			},
+			{
+				name_id = "menu_st_category_mod",
+				category = "mod"
+			},
+			{
+				name_id = "menu_st_category_favorites",
+				category = "favorites"
+			}
+		}
+	end
+end

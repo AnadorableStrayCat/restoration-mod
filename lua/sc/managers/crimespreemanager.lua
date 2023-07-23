@@ -1,3 +1,6 @@
+--[[
+
+-- Not sure why, but this screws up some heists and causes soft locks. Disabling for now, enjoy buged hud in crimespree for now
 -- Reset secured bags on mission start (vanilla doesn't clear this so it displays wrong in the HUD)
 Hooks:PreHook(CrimeSpreeManager, "on_mission_started", "sh_on_mission_started", function (self)
 	if self:is_active() then
@@ -87,6 +90,8 @@ Hooks:OverrideFunction(CrimeSpreeManager, "on_mission_completed", function (self
 		MenuCallbackHandler:update_matchmake_attributes()
 	end
 end)
+
+]]--
 
 function CrimeSpreeManager:get_mission(mission_id)
 	mission_id = mission_id or self:current_mission()

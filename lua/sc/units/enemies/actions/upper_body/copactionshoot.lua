@@ -52,7 +52,18 @@ function CopActionShoot:init(action_desc, common_data)
 	if self._glint_effect then
 		self._glint_effect:activate()
 	end
+	
+	if self._ext_inventory.shield_unit then
+		self._shield_unit = self._ext_inventory:shield_unit()
+		local shield_base = self._shield_unit and self._shield_unit:base()
+		local use_data = shield_base and shield_base.get_use_data and shield_base:get_use_data()
 
+		if use_data then
+			self._shield_base = shield_base
+			self._shield_use_range = use_data.range
+			self._shield_use_cooldown = use_data.cooldown
+		end
+	end	
 	
 	local weap_tweak = weapon_unit:base():weapon_tweak_data()
 	local weapon_usage_tweak = common_data.char_tweak.weapon[weap_tweak.usage]
@@ -164,8 +175,8 @@ function CopActionShoot:init(action_desc, common_data)
 					dmg_mul = self._common_data.char_tweak.melee_weapon_dmg_multiplier
 				end
 
-				if self._common_data.char_tweak.melee_weapon_speed then
-					speed = self._common_data.char_tweak.melee_weapon_speed
+				if self._w_usage_tweak.melee_speed then
+					speed = self._w_usage_tweak.melee_speed
 				end
 
 				local melee_weapon_stats = tweak_data.weapon.npc_melee[melee_weapon]
@@ -651,6 +662,14 @@ function CopActionShoot:update(t)
 
 		target_vec = self:_upd_ik(target_vec, fwd_dot, t)
 	end
+	
+	if self._shield_use_cooldown and target_vec and self._common_data.allow_fire and self._shield_use_cooldown < t and target_dis < self._shield_use_range then
+		local new_cooldown = self._shield_base:request_use(t)
+
+		if new_cooldown then
+			self._shield_use_cooldown = new_cooldown
+		end
+	end	
 
 	if not ext_anim.reload and not ext_anim.equip and not ext_anim.melee then
 		local proceed_as_usual = true
@@ -821,6 +840,15 @@ function CopActionShoot:update(t)
 				local falloff, i_range = self:_get_shoot_falloff(target_dis, self._falloff)
 				local dmg_buff = self._ext_base:get_total_buff("base_damage")
 				local dmg_mul = (1 + dmg_buff) * falloff.dmg_mul
+
+				if managers.mutators:is_mutator_active(MutatorCG22) then
+					local cg22_mutator = managers.mutators:get_mutator(MutatorCG22)
+
+					if cg22_mutator:can_enemy_be_affected_by_buff("green", self._unit) then
+						dmg_mul = dmg_mul * cg22_mutator:get_enemy_green_multiplier()
+					end
+				end				
+				
 				local new_target_pos = self._shoot_history and self:_get_unit_shoot_pos(t, target_pos, target_dis, falloff, i_range, autotarget)
 
 				if new_target_pos then
@@ -879,6 +907,10 @@ function CopActionShoot:update(t)
 					if self._shooting_husk_unit then
 						self._next_vis_ray_t = t + 2
 					end
+					
+					if Network:is_server() and alive(self._ext_inventory._shield_unit) and target_dis < 1100 and self._ext_inventory._shield_unit:base() and self._ext_inventory._shield_unit:base().request_start_flash and self._ext_inventory._shield_unit:base():can_request_flash(t) then
+						self._ext_inventory._shield_unit:base():request_start_flash()
+					end					
 
 					local fire_line_is_obstructed = self._unit:raycast("ray", shoot_from_pos, target_pos, "slot_mask", managers.slot:get_mask("AI_visibility"), "ray_type", "ai_vision")
 

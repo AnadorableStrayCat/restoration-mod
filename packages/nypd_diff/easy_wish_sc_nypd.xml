@@ -133,6 +133,13 @@
 	<unit				path="units/pd2_mod_nypd/characters/ene_security_gensec_2/ene_security_gensec_2" load="true"/>
 	<unit				path="units/pd2_mod_nypd/characters/ene_security_gensec_2/ene_security_gensec_2_husk" load="true"/>	
 	
+	<!--Jerome The Camera Man-->
+	<object				path="units/pd2_mod_nypd/characters/ene_security_gensec_3/ene_security_gensec_3"/>
+	<cooked_physics		path="units/pd2_mod_nypd/characters/ene_security_gensec_3/ene_security_gensec_3"/>
+	<model				path="units/pd2_mod_nypd/characters/ene_security_gensec_3/ene_security_gensec_3"/>
+	<unit				path="units/pd2_mod_nypd/characters/ene_security_gensec_3/ene_security_gensec_3" load="true"/>
+	<unit				path="units/pd2_mod_nypd/characters/ene_security_gensec_3/ene_security_gensec_3_husk" load="true"/>
+	
 	<!-- these work fine in here so i'm leaving them in here -->		
 	<material_config	path="units/payday2/characters/ene_fbi_vars/ene_fbi_var1" />
 	<material_config	path="units/payday2/characters/ene_fbi_vars/ene_fbi_var1_contour" />
@@ -182,7 +189,7 @@
 	
 	<!--city swat 2-->
     <unit				path="units/pd2_mod_nypd/characters/ene_city_swat_2/ene_city_swat_2" load="true"/>
-    <unit				path="units/pd2_mod_nypd/characters/ene_city_swat_2/ene_city_swat_2_husk" load="true"/>	
+    <unit				path="units/pd2_mod_nypd/characters/ene_city_swat_2/ene_city_swat_2_husk" load="true"/>
 	<model				path="units/pd2_mod_nypd/characters/ene_city_swat_2/ene_city_swat_2" />	
 	<object				path="units/pd2_mod_nypd/characters/ene_city_swat_2/ene_city_swat_2" />	
 	<cooked_physics		path="units/pd2_mod_nypd/characters/ene_city_swat_2/ene_city_swat_2" />	
@@ -305,6 +312,9 @@
 	<material_config	path="units/pd2_mod_nypd/characters/ene_bulldozer_2/ene_bulldozer_2" />	
 	<material_config	path="units/pd2_mod_nypd/characters/ene_bulldozer_2/ene_bulldozer_2_contour" />			
 	<cooked_physics		path="units/pd2_mod_nypd/characters/ene_bulldozer_2/ene_bulldozer_2" />	
+	
+	<unit_obj			path="units/pd2_mod_nypd/characters/ene_bulldozer_2/debris/ene_acc_bulldozer_neck/ene_acc_bulldozer_neck" />
+	<unit_obj			path="units/pd2_mod_nypd/characters/ene_bulldozer_2/debris/ene_acc_bulldozer_throat/ene_acc_bulldozer_throat" />
 
 	<!-- skulldozer -->
     <unit				path="units/payday2/characters/ene_bulldozer_3_sc/ene_bulldozer_3_sc" load="true"/>
@@ -319,26 +329,19 @@
 	<texture			path="units/payday2/characters/shared_textures/bulldozer_city_df" />
 	<unit_obj			path="units/payday2/characters/ene_bulldozer_3_sc/debris/ene_acc_bulldozer_helmet/ene_acc_bulldozer_helmet" load="false"/>
 	
-	<unit_mat			path="units/pd2_mod_nypd/characters/ene_acc_bulldozer_faceplate/ene_acc_bulldozer_faceplate" />
-	<cooked_physics		path="units/pd2_mod_nypd/characters/ene_acc_bulldozer_faceplate/ene_acc_bulldozer_faceplate"/>	
+	<unit_obj			path="units/pd2_mod_nypd/characters/ene_bulldozer_1/debris/ene_acc_bulldozer_helmet_plate/ene_acc_bulldozer_helmet_plate" />
+	<unit_obj			path="units/pd2_mod_nypd/characters/ene_bulldozer_1/debris/ene_acc_bulldozer_neck/ene_acc_bulldozer_neck" />
+	<unit_obj			path="units/pd2_mod_nypd/characters/ene_bulldozer_1/debris/ene_acc_bulldozer_throat/ene_acc_bulldozer_throat" />
 
-	<!--Grenadier-->
-	<object				path="units/payday2/characters/ene_grenadier_1/ene_grenadier_1" force="false"/>
+	<!-- Grenadier -->
 	<sequence_manager	path="units/payday2/characters/ene_grenadier_1/ene_grenadier_1" force="false"/>
-	<cooked_physics		path="units/payday2/characters/ene_grenadier_1/ene_grenadier_1" force="false"/>
-	<model				path="units/payday2/characters/ene_grenadier_1/ene_grenadier_1" force="false"/>
-	<unit				path="units/payday2/characters/ene_grenadier_1/ene_grenadier_1" force="false" load="true"/>
-	<material_config	path="units/payday2/characters/ene_grenadier_1/ene_grenadier_1" force="false"/>
-	<material_config	path="units/payday2/characters/ene_grenadier_1/ene_grenadier_1_contour" force="false"/>
-	<unit				path="units/payday2/characters/ene_grenadier_1/ene_grenadier_1_husk" force="false" load="true"/>
-	
-	<texture			path="units/payday2/characters/shared_textures/glass_op" force="false"/>
-	<texture			path="units/payday2/characters/shared_textures/material_body_df" force="false"/>
-	<texture			path="units/payday2/characters/shared_textures/material_body_nm" force="false"/>
-	<texture			path="units/payday2/characters/shared_textures/grenadier_atlas_df" force="false"/>
-	<texture			path="units/payday2/characters/shared_textures/grenadier_atlas_nm" force="false"/>
-	<texture			path="units/payday2/characters/shared_textures/grenadier_body_df" force="false"/>
-	<texture			path="units/payday2/characters/shared_textures/grenadier_body_nm" force="false"/>
+	<unit				path="units/pd2_mod_nypd/characters/ene_grenadier_1/ene_grenadier_1" force="false" load="true"/>
+	<unit				path="units/pd2_mod_nypd/characters/ene_grenadier_1/ene_grenadier_1_husk" force="false" load="true"/>
+	<object				path="units/pd2_mod_nypd/characters/ene_grenadier_1/ene_grenadier_1" force="false"/>
+	<cooked_physics		path="units/pd2_mod_nypd/characters/ene_grenadier_1/ene_grenadier_1" force="false"/>
+	<model				path="units/pd2_mod_nypd/characters/ene_grenadier_1/ene_grenadier_1" force="false"/>
+	<material_config	path="units/pd2_mod_nypd/characters/ene_grenadier_1/ene_grenadier_1" force="false"/>
+	<material_config	path="units/pd2_mod_nypd/characters/ene_grenadier_1/ene_grenadier_1_contour" force="false"/>
 	
 	<!-- cloaca -->
 	<unit				path="units/pd2_mod_nypd/characters/ene_spook_1/ene_spook_1" load="true"/>
@@ -431,6 +434,8 @@
 	<unit				path="units/pd2_dlc_vip/characters/ene_phalanx_1_assault/ene_phalanx_1_assault" force="false" load="true"/>
 	<unit				path="units/pd2_dlc_vip/characters/ene_phalanx_1_assault/ene_phalanx_1_assault_husk" force="false" load="true"/>
 	<object				path="units/pd2_dlc_vip/characters/ene_phalanx_1_assault/ene_phalanx_1_assault" force="false" />
+	<material_config	path="units/pd2_dlc_vip/characters/ene_phalanx_1_assault/ene_phalanx_1_assault" force="false"/>
+	<material_config	path="units/pd2_dlc_vip/characters/ene_phalanx_1_assault/ene_phalanx_1_assault_contour" force="false"/>
 	<model				path="units/pd2_dlc_vip/characters/ene_phalanx_1_assault/ene_phalanx_1_assault" force="false" />
 
 	
@@ -442,6 +447,8 @@
 	<model				path="units/pd2_dlc_vip/characters/ene_titan_rifle/ene_titan_rifle" force="false"/>
 	<material_config	path="units/pd2_dlc_vip/characters/ene_titan_rifle/ene_titan_rifle" force="false"/>
 	<material_config	path="units/pd2_dlc_vip/characters/ene_titan_rifle/ene_titan_rifle_contour" force="false"/>
+	
+	<texture			path="units/pd2_dlc_vip/characters/shared_textures/titan_swat_glass_red_df" load="true" force="false"/>
 
 	<!--Titan Shotgunner-->	
 	<unit				path="units/pd2_dlc_vip/characters/ene_titan_shotgun/ene_titan_shotgun" force="false" load="true"/>
@@ -449,8 +456,10 @@
 	<object				path="units/pd2_dlc_vip/characters/ene_titan_shotgun/ene_titan_shotgun" force="false"/>
 	<cooked_physics		path="units/pd2_dlc_vip/characters/ene_titan_shotgun/ene_titan_shotgun" force="false"/>
 	<model				path="units/pd2_dlc_vip/characters/ene_titan_shotgun/ene_titan_shotgun" force="false"/>
-
+	<material_config	path="units/pd2_dlc_vip/characters/ene_titan_shotgun/ene_titan_shotgun" force="false"/>
+	<material_config	path="units/pd2_dlc_vip/characters/ene_titan_shotgun/ene_titan_shotgun_contour" force="false"/>
 	
+	<texture			path="units/pd2_dlc_vip/characters/shared_textures/titan_swat_glass_blue_df" load="true" force="false"/>	
 	<texture			path="units/pd2_dlc_vip/characters/shared_textures/heads_dozer_df" force="false"/>
 	<texture			path="units/pd2_dlc_vip/characters/shared_textures/heads_dozer_il" load="true" force="false"/>
 
@@ -553,7 +562,9 @@
 	<unit				path="units/pd2_mod_bravo/characters/ene_bravo_shotgun/ene_bravo_shotgun"  load="true"/>
 	<material_config	path="units/pd2_mod_bravo/characters/ene_bravo_shotgun/ene_bravo_shotgun" />
 	<material_config	path="units/pd2_mod_bravo/characters/ene_bravo_shotgun/ene_bravo_shotgun_contour" />
-	<unit				path="units/pd2_mod_bravo/characters/ene_bravo_shotgun/ene_bravo_shotgun_husk"  load="true"/>	
+	<unit				path="units/pd2_mod_bravo/characters/ene_bravo_shotgun/ene_bravo_shotgun_husk"  load="true"/>
+	<unit				path="units/pd2_mod_bravo/characters/ene_bravo_guard_2/ene_bravo_guard_2"  load="true"/>
+	<unit				path="units/pd2_mod_bravo/characters/ene_bravo_guard_2/ene_bravo_guard_2_husk"  load="true"/>
 
 	<!--bravo rifle-->
 	<object				path="units/pd2_mod_bravo/characters/ene_bravo_rifle/ene_bravo_rifle" />
@@ -562,7 +573,9 @@
 	<unit				path="units/pd2_mod_bravo/characters/ene_bravo_rifle/ene_bravo_rifle"  load="true"/>
 	<material_config	path="units/pd2_mod_bravo/characters/ene_bravo_rifle/ene_bravo_rifle" />
 	<material_config	path="units/pd2_mod_bravo/characters/ene_bravo_rifle/ene_bravo_rifle_contour" />
-	<unit				path="units/pd2_mod_bravo/characters/ene_bravo_rifle/ene_bravo_rifle_husk"  load="true"/>	
+	<unit				path="units/pd2_mod_bravo/characters/ene_bravo_rifle/ene_bravo_rifle_husk"  load="true"/>
+	<unit				path="units/pd2_mod_bravo/characters/ene_bravo_guard_1/ene_bravo_guard_1"  load="true"/>
+	<unit				path="units/pd2_mod_bravo/characters/ene_bravo_guard_1/ene_bravo_guard_1_husk"  load="true"/>
 	
 	<!--bravo lmg-->
 	<object				path="units/pd2_mod_bravo/characters/ene_bravo_lmg/ene_bravo_lmg" />
@@ -571,7 +584,9 @@
 	<unit				path="units/pd2_mod_bravo/characters/ene_bravo_lmg/ene_bravo_lmg"  load="true"/>
 	<material_config	path="units/pd2_mod_bravo/characters/ene_bravo_lmg/ene_bravo_lmg" />
 	<material_config	path="units/pd2_mod_bravo/characters/ene_bravo_lmg/ene_bravo_lmg_contour" />
-	<unit				path="units/pd2_mod_bravo/characters/ene_bravo_lmg/ene_bravo_lmg_husk"  load="true"/>	
+	<unit				path="units/pd2_mod_bravo/characters/ene_bravo_lmg/ene_bravo_lmg_husk"  load="true"/>
+    <unit				path="units/pd2_mod_bravo/characters/ene_bravo_guard_3/ene_bravo_guard_3"  load="true"/>
+	<unit				path="units/pd2_mod_bravo/characters/ene_bravo_guard_3/ene_bravo_guard_3_husk"  load="true"/>	
 	
 	<!--cool hat brovo-->
 	<object				path="units/pd2_mod_bravo/characters/ene_acc_bravo_sickhat/ene_acc_bravo_sickhat" />

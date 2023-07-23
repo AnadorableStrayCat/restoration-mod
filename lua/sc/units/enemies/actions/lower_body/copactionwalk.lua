@@ -90,6 +90,7 @@ function CopActionWalk:init(action_desc, common_data)
 	CopActionAct._create_blocks_table(self, action_desc.blocks)
 
 	self._persistent = action_desc.persistent
+	self._interrupted = action_desc.interrupted
 	self._haste = action_desc.variant
 	self._start_t = TimerManager:game():time()
 	self._no_walk = action_desc.no_walk
@@ -717,11 +718,13 @@ function CopActionWalk:update(t)
 			mrot_slerp(rot_new, self._curve_path_end_rot, self._nav_link_rot or self._end_rot, 1 - math_min(1, mvec3_dis_no_z(self._last_pos, self._footstep_pos) / 140))
 		else
 			local wanted_u_fwd = tmp_vec1
+			local rotate_mult = self._common_data.char_tweak.rotation_speed or 3
 
 			mvec3_set(wanted_u_fwd, move_dir_norm)
 			mvec3_rot(wanted_u_fwd, self._walk_side_rot[wanted_walk_dir])
 			mrot_lookat(rot_new, wanted_u_fwd, math_up)
-			mrot_slerp(rot_new, self._common_data.rot, rot_new, math_min(1, dt * 3))
+					 
+			mrot_slerp(rot_new, self._common_data.rot, rot_new, math_min(1, dt * rotate_mult))
 		end
 
 		self._ext_movement:set_rotation(rot_new)
@@ -809,19 +812,6 @@ function CopActionWalk:update(t)
 			elseif not self._no_walk then
 				variant = "walk"
 			end
-		end
-
-		if not self._walk_anim_velocities[self._stance.values[4] > 0 and "wounded" or anim_data.pose or "stand"]
-		or not self._walk_anim_velocities[self._stance.values[4] > 0 and "wounded" or anim_data.pose or "stand"][self._stance.name]
-		or not self._walk_anim_velocities[self._stance.values[4] > 0 and "wounded" or anim_data.pose or "stand"][self._stance.name][variant]
-		or not self._walk_anim_velocities[self._stance.values[4] > 0 and "wounded" or anim_data.pose or "stand"][self._stance.name][variant][wanted_walk_dir] then
-			log("Something's fucked up!!!")
-			log("tweak_table: " .. tostring(self._unit:base()._tweak_table))
-			log("pose: " .. tostring(self._stance.values[4] > 0 and "wounded" or anim_data.pose or "stand"))
-			log("stance: " .. tostring(self._stance.name))
-			log("haste: " .. tostring(variant))
-			log("move_dir: " .. tostring(wanted_walk_dir))
-			return
 		end
 
 		self:_adjust_move_anim(wanted_walk_dir, variant)
@@ -914,11 +904,12 @@ function CopActionWalk:_upd_start_anim(t)
 
 			if not self._end_of_curved_path then
 				local wanted_u_fwd = tmp_vec1
+				local rotate_mult = self._common_data.char_tweak.rotation_speed or 3
 
 				mvec3_dir(wanted_u_fwd, self._common_data.pos, self._curve_path[self._curve_path_index + 1])
 				mvec3_rot(wanted_u_fwd, self._walk_side_rot[self._start_run_straight])
 				mrot_lookat(tmp_rot1, wanted_u_fwd, math_up) -- don't think z matters here at all
-				mrot_slerp(tmp_rot1, self._common_data.rot, tmp_rot1, math_min(1, dt * 3))
+				mrot_slerp(tmp_rot1, self._common_data.rot, tmp_rot1, math_min(1, dt * rotate_mult))
 
 				self._ext_movement:set_rotation(tmp_rot1)
 			end
@@ -1043,6 +1034,14 @@ function CopActionWalk:_get_current_max_walk_speed(move_dir)
 			speed = speed * tweak_data.network.stealth_speed_boost
 		end
 	end
+	
+	if managers.mutators:is_mutator_active(MutatorCG22) then
+		local cg22 = managers.mutators:get_mutator(MutatorCG22)
+
+		if cg22:can_enemy_be_affected_by_buff("yellow", self._unit) then
+			speed = speed * cg22:get_enemy_yellow_multiplier()
+		end
+	end	
 
 	return speed
 end
@@ -1362,7 +1361,7 @@ end
 
 function CopActionWalk:_adjust_move_anim(side, speed)
 	local anim_data = self._ext_anim
-	if anim_data[speed] and anim_data["move_" .. side] then
+	if anim_data[speed] and (not anim_data.haste or anim_data.haste == speed) and anim_data["move_" .. side] then -- Otherwise units can't transition from sprinting to running due to how the sprint state is set up
 		return
 	end
 
@@ -1471,7 +1470,9 @@ function CopActionWalk:_upd_stop_anim(t)
 	end
 
 	mrot_lookat(rot_new, face_fwd, math_up)
-	mrot_slerp(rot_new, self._common_data.rot, rot_new, math_min(1, dt * 3))
+	local rotate_mult = self._common_data.char_tweak.rotation_speed or 3
+	
+	mrot_slerp(rot_new, self._common_data.rot, rot_new, math_min(1, dt * rotate_mult))
 
 	self._ext_movement:set_rotation(rot_new)
 
@@ -1597,6 +1598,7 @@ function CopActionWalk:_play_nav_link_anim(t)
 	self._end_of_path = nil
 	self._curve_path_end_rot = nil
 	self._nav_link_rot = nil
+	self._chk_stop_dis = nil
 
 	self:_advance_simplified_path()
 

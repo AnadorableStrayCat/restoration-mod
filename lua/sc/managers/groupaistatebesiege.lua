@@ -115,6 +115,7 @@ function GroupAIStateBesiege:_choose_best_groups(best_groups, group, group_types
 	return _choose_best_groups_actual(self, best_groups, group, group_types, new_allowed_groups, weight, ...)
 end
 
+--[[
 -- Cache for normal spawngroups to avoid losing them when they're overwritten.
 -- Once a captain is spawned in, this gets reset back to nil.
 local cached_spawn_groups = nil
@@ -141,6 +142,7 @@ function GroupAIStateBesiege:force_spawn_group_hard(spawn_group)
 	cached_spawn_groups = self._tweak_data.assault.groups
 	self._tweak_data.assault.groups = new_spawn_groups
 end
+]]--
 
 --Refactored from vanilla code to be a bit easier to read and debug. Also adds timestamp support.
 local debug_spawn_groups = true
@@ -581,9 +583,7 @@ function GroupAIStateBesiege:_upd_assault_task()
 			if next(self._spawning_groups) then
 				-- Nothing
 			else
-				if not managers.skirmish:is_skirmish() then
-					self:_check_spawn_timed_groups(primary_target_area, task_data)
-				end			
+				self:_check_spawn_timed_groups(primary_target_area, task_data)		
 			
 				local spawn_group, spawn_group_type = self:_find_spawn_group_near_area(primary_target_area, self._tweak_data.assault.groups, nil, nil, nil)
 
@@ -617,6 +617,60 @@ function GroupAIStateBesiege:_upd_assault_task()
 	self:_assign_enemy_groups_to_assault(task_data.phase)
 end
 
+--Add a check to handle Skirmish's unique diff curve
+function GroupAIStateBesiege:_check_spawn_timed_groups(target_area, task_data)
+	if not self._timed_groups then
+		return
+	end
+	
+	if managers.skirmish:is_skirmish() then
+		diff_curve = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+	else
+		diff_curve = {1, 1, 1}
+	end	
+
+	local cur_group, cur_group_tweak_data, cur_group_individual_data = nil
+	local t = TimerManager:game():time()
+
+	for group_id, cur_group_data in pairs(self._timed_groups) do
+		cur_group_tweak_data = cur_group_data.tweak_data
+		cur_group_individual_data = cur_group_data.individual_data
+
+		for i = 1, #cur_group_individual_data do
+			cur_group = cur_group_individual_data[i]
+
+			if not cur_group.timer then
+				cur_group.timer = t + (cur_group_tweak_data.initial_spawn_delay or cur_group_tweak_data.spawn_cooldown)
+			elseif cur_group.needs_spawn then
+				if cur_group.timer < t then
+					if self:_spawn_timed_group(task_data, cur_group, target_area, {
+						[group_id] = diff_curve
+					}) then
+						cur_group.needs_spawn = false
+					else
+						cur_group.timer = t + 1
+					end
+				end
+			elseif cur_group.respawning_units then
+				for spawn_unit_type, respawn_data in pairs(cur_group.respawning_units) do
+					if respawn_data.timer < t then
+						if self:_respawn_unit_for_group(task_data, cur_group, target_area, respawn_data, spawn_unit_type, {
+							[group_id] = diff_curve
+						}) then
+							cur_group.respawning_units[spawn_unit_type] = nil
+
+							if not next(cur_group.respawning_units) then
+								cur_group.respawning_units = nil
+							end
+						else
+							respawn_data.timer = t + 1
+						end
+					end
+				end
+			end
+		end
+	end
+end
 
 -- Add an alternate in_place check to prevent enemy groups from getting stuck
 function GroupAIStateBesiege:_assign_enemy_groups_to_assault(phase)
@@ -1104,10 +1158,10 @@ function GroupAIStateBesiege:_chk_group_use_grenade(assault_area, group, detonat
 
 	local ray_mask = managers.slot:get_mask("world_geometry")
 
-	-- If players camp a specific area for too long, turn a smoke grenade into a teargas grenade instead
+	--Grenadiers use tear gas pre-emptively instead of smoke grenades
 	local use_teargas
-	local can_use_teargas = grenade_user and grenade_user.char_tweak and grenade_user.char_tweak.use_gas and grenade_type == "smoke_grenade" and area and area.criminal_entered_t and table.size(area.neighbours) <= 2
-	if can_use_teargas and math_random() < (self._t - assault_area.criminal_entered_t - 60) / 180 then
+	local can_use_teargas = grenade_user and grenade_user.char_tweak and grenade_user.char_tweak.use_gas and grenade_type == "smoke_grenade"
+	if can_use_teargas then
 		mvec_set(detonate_offset_pos, math.UP)
 		mvec_mul(detonate_offset_pos, 1000)
 		mvec_add(detonate_offset_pos, assault_area.pos)
@@ -1143,8 +1197,6 @@ function GroupAIStateBesiege:_chk_group_use_grenade(assault_area, group, detonat
 
 	local timeout
 	if use_teargas then
-		assault_area.criminal_entered_t = nil
-
 		self:detonate_cs_grenade(detonate_pos, mvec_cpy(grenade_user.m_pos), tweak_data.group_ai.cs_grenade_lifetime or 10)
 
 		timeout = tweak_data.group_ai.cs_grenade_timeout or tweak_data.group_ai.smoke_and_flash_grenade_timeout
@@ -1446,6 +1498,35 @@ Hooks:OverrideFunction(GroupAIStateBesiege, "_perform_group_spawning", function 
 
 	-- Set a cooldown before new units can be spawned via regular spawn tasks
 	self._next_group_spawn_t = self._t + spawn_task.group.size * tweak_data.group_ai.spawn_cooldown_mul
+end)
+
+-- When scripted spawns are assigned to group ai, use a generic group type instead of using their category as type
+-- This ensures they are not retired immediatley cause they are not part of assault/recon group types
+Hooks:OverrideFunction(GroupAIStateBesiege, "assign_enemy_to_group_ai", function (self, unit, team_id)
+	local assault_active = self._task_data.assault.active
+	local area = self:get_area_from_nav_seg_id(unit:movement():nav_tracker():nav_segment())
+	local grp_objective = {
+		type = assault_active and "assault_area" or "recon_area",
+		area = area,
+		moving_out = false
+	}
+
+	local objective = unit:brain():objective()
+	if objective then
+		grp_objective.area = objective.area or objective.nav_seg and self:get_area_from_nav_seg_id(objective.nav_seg) or grp_objective.area
+		objective.grp_objective = grp_objective
+	end
+
+	local group = self:_create_group({
+		size = 1,
+		type = assault_active and "custom_assault" or "custom_recon"
+	})
+	group.team = self._teams[team_id]
+	group.objective = grp_objective
+	group.has_spawned = true
+
+	self:_add_group_member(group, unit:key())
+	self:set_enemy_assigned(area, unit:key())
 end)
 
 -- Fix for potential crash when a group objective does not have a coarse path

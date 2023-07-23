@@ -150,16 +150,13 @@
 	<cooked_physics		path="units/pd2_dlc_bph/characters/ene_acc_murkywater_hat/ene_acc_murkywater_hat" force="false"/>
 	
 	<!--Murky Sniper-->
-	<unit				path="units/pd2_mod_sharks/characters/ene_murky_sniper/ene_murky_sniper" force="false" load="true"/>
-	<unit				path="units/pd2_mod_sharks/characters/ene_murky_sniper/ene_murky_sniper_husk" force="false" load="true"/>
-	<object				path="units/pd2_mod_sharks/characters/ene_murky_sniper/ene_murky_sniper" force="false"/>
-	<cooked_physics		path="units/pd2_mod_sharks/characters/ene_murky_sniper/ene_murky_sniper" force="false"/>
-	<model				path="units/pd2_mod_sharks/characters/ene_murky_sniper/ene_murky_sniper" force="false"/>
-	<material_config	path="units/pd2_mod_sharks/characters/ene_murky_sniper/ene_murky_sniper" force="false"/>
-	<material_config	path="units/pd2_mod_sharks/characters/ene_murky_sniper/ene_murky_sniper_contour" force="false"/>	
-
-	<df_nm				path="units/pd2_mod_sharks/characters/ene_murky_sniper/body" force="false"/>
-	<df_nm				path="units/pd2_mod_sharks/characters/ene_murky_sniper/head" force="false"/>	
+	<unit				path="units/pd2_mod_sharks/characters/ene_murky_sniper_2/ene_murky_sniper_2" force="false" load="true"/>
+	<unit				path="units/pd2_mod_sharks/characters/ene_murky_sniper_2/ene_murky_sniper_2_husk" force="false" load="true"/>
+	<object				path="units/pd2_mod_sharks/characters/ene_murky_sniper_2/ene_murky_sniper_2" force="false"/>
+	<cooked_physics		path="units/pd2_mod_sharks/characters/ene_murky_sniper_2/ene_murky_sniper_2" force="false"/>
+	<model				path="units/pd2_mod_sharks/characters/ene_murky_sniper_2/ene_murky_sniper_2" force="false"/>
+	<material_config	path="units/pd2_mod_sharks/characters/ene_murky_sniper_2/ene_murky_sniper_2" force="false"/>
+	<material_config	path="units/pd2_mod_sharks/characters/ene_murky_sniper_2/ene_murky_sniper_2_contour" force="false"/>
 	<!-- blue swat tier end -->
 	
 	<!--fbi tier-->
@@ -234,6 +231,27 @@
 	<unit				path="units/pd2_mod_sharks/characters/ene_murky_shield_city/ene_murky_shield_city" force="false" load="true"/>
 	<unit				path="units/pd2_mod_sharks/characters/ene_murky_shield_city/ene_murky_shield_city_husk" force="false" load="true"/>
 	<!-- gensec tier end -->	
+	
+	<!-- zeals (also used as guards in Murky Station) -->		
+	<!--zeal swat 1-->
+	<object				path="units/pd2_mod_sharks/characters/ene_zeal_city_1/ene_zeal_city_1" force="false"/>
+	<cooked_physics		path="units/pd2_mod_sharks/characters/ene_zeal_city_1/ene_zeal_city_1" force="false"/>
+	<model				path="units/pd2_mod_sharks/characters/ene_zeal_city_1/ene_zeal_city_1" force="false"/>
+	<material_config	path="units/pd2_mod_sharks/characters/ene_zeal_city_1/ene_zeal_city_1" force="false"/>
+	<material_config	path="units/pd2_mod_sharks/characters/ene_zeal_city_1/ene_zeal_city_1_contour" force="false"/>
+	<unit				path="units/pd2_mod_sharks/characters/ene_murky_elite_guard_1/ene_murky_elite_guard_1" force="false" load="true"/>
+	<unit				path="units/pd2_mod_sharks/characters/ene_murky_elite_guard_1/ene_murky_elite_guard_1_husk" force="false" load="true"/>   
+	
+	<!--zeal swat 2-->
+	<object				path="units/pd2_mod_sharks/characters/ene_zeal_city_2/ene_zeal_city_2" force="false"/>
+	<cooked_physics		path="units/pd2_mod_sharks/characters/ene_zeal_city_2/ene_zeal_city_2" force="false"/>
+	<model				path="units/pd2_mod_sharks/characters/ene_zeal_city_2/ene_zeal_city_2" force="false"/>
+	<material_config	path="units/pd2_mod_sharks/characters/ene_zeal_swat_heavy/ene_zeal_swat_heavy" force="false"/>
+	<material_config	path="units/pd2_mod_sharks/characters/ene_zeal_swat_heavy/ene_zeal_swat_heavy_contour" force="false"/>
+	<unit				path="units/pd2_mod_sharks/characters/ene_murky_elite_guard_2/ene_murky_elite_guard_2" force="false" load="true"/>
+	<unit				path="units/pd2_mod_sharks/characters/ene_murky_elite_guard_2/ene_murky_elite_guard_2_husk" force="false" load="true"/>  
+
+	<texture			path="units/pd2_mod_sharks/characters/shared_textures/ene_zeal_city_df" force="false"/>
 	
 	<!-- specials-->
 	<!-- greendozer -->
@@ -323,6 +341,7 @@
 	<material_config	path="units/pd2_mod_sharks/characters/ene_murky_fbi_tank_medic/ene_murky_fbi_tank_medic_contour" force="false"/>
 	<cooked_physics		path="units/pd2_mod_sharks/characters/ene_murky_fbi_tank_medic/ene_murky_fbi_tank_medic" force="false"/>
 	
+	<!--Murky Dozer Medic Armor Bits-->
 	<unit_obj			path="units/pd2_mod_sharks/characters/ene_murky_fbi_tank_medic/debris/ene_acc_bulldozer_neck/ene_acc_bulldozer_neck" load="false"/>
 
 	<unit_obj			path="units/pd2_mod_sharks/characters/ene_murky_fbi_tank_medic/debris/ene_acc_bulldozer_throat/ene_acc_bulldozer_throat" load="false"/>
@@ -339,10 +358,20 @@
 	<unit				path="units/pd2_mod_sharks/characters/ene_murky_tazer/ene_murky_tazer_husk" force="false" load="true"/> 
 	
 
-	<!--Murky Tazer Textures-->	
-	<texture			path="units/pd2_mod_sharks/characters/ene_murky_tazer/taser_body_nm" force="false"/>
-	<texture			path="units/pd2_mod_sharks/characters/ene_murky_tazer/taser_body_df" force="false"/>
+	<!--Murky Tazer Textures-->
+	<df_nm				path="units/pd2_mod_sharks/characters/ene_murky_tazer/taser_body" force="false"/>
 	<texture			path="units/pd2_mod_sharks/characters/ene_murky_tazer/helmets_heavy_taser_atlas_df" force="false"/>
+	
+	<!-- OMNIA taster (for Spring squad) -->
+	<object				path="units/pd2_mod_omnia/characters/ene_omnia_taser/ene_omnia_taser" force="false"/>
+	<cooked_physics		path="units/pd2_mod_omnia/characters/ene_omnia_taser/ene_omnia_taser" force="false"/>
+	<model				path="units/pd2_mod_omnia/characters/ene_omnia_taser/ene_omnia_taser" force="false"/>
+	<unit				path="units/pd2_mod_omnia/characters/ene_omnia_taser/ene_omnia_taser" force="false" load="true"/>
+	<material_config	path="units/pd2_mod_omnia/characters/ene_omnia_taser/ene_omnia_taser" force="false"/>
+	<material_config	path="units/pd2_mod_omnia/characters/ene_omnia_taser/ene_omnia_taser_contour" force="false"/>
+	<unit				path="units/pd2_mod_omnia/characters/ene_omnia_taser/ene_omnia_taser_husk" force="false" load="true"/> 
+	<df_nm				path="units/pd2_mod_omnia/characters/shared_textures/taser_body"/>
+	<texture			path="units/pd2_mod_omnia/characters/shared_textures/eyes_il"/>
 
 	<!--Murky Grenadier-->
 	<sequence_manager	path="units/pd2_mod_sharks/characters/ene_grenadier_1/ene_grenadier_1" force="false"/>
@@ -422,6 +451,7 @@
 	<texture			path="units/pd2_mod_sharks/characters/shared_textures/swat_helmets_atlas_df" force="false"/>	
 	<texture			path="units/pd2_mod_sharks/characters/shared_textures/swat_heavy_df" force="false"/>	
 	<texture			path="units/pd2_mod_sharks/characters/shared_textures/gren_glass_df" />	
+	<texture			path="units/pd2_mod_sharks/characters/shared_textures/helmets_atlas_murky_df" />
 	
 	<!-- titans	 -->	
 	<!--Titan Shotgunner-->	
@@ -430,17 +460,20 @@
 	<object				path="units/pd2_mod_sharks/characters/ene_titan_shotgun/ene_titan_shotgun" force="false"/>
 	<cooked_physics		path="units/pd2_mod_sharks/characters/ene_titan_shotgun/ene_titan_shotgun" force="false"/>
 	<model				path="units/pd2_mod_sharks/characters/ene_titan_shotgun/ene_titan_shotgun" force="false"/>
+	<material_config	path="units/pd2_mod_sharks/characters/ene_titan_shotgun/ene_titan_shotgun" force="false"/>
+	<material_config	path="units/pd2_mod_sharks/characters/ene_titan_shotgun/ene_titan_shotgun_contour" force="false"/>
 
 	
 	<texture			path="units/pd2_mod_sharks/characters/shared_textures/ene_titan_rifle_df" force="false"/>
+	<texture			path="units/pd2_mod_sharks/characters/shared_textures/ene_titan_shotgun_df" force="false"/>
 	<df_nm				path="units/pd2_mod_sharks/characters/shared_textures/heads_murkywater" force="false"/>
 
 	<!--Titanshield-->	
 	<unit				path="units/pd2_dlc_vip/characters/ene_phalanx_1_assault/ene_phalanx_1_assault" force="false" load="true"/>
 	<unit				path="units/pd2_dlc_vip/characters/ene_phalanx_1_assault/ene_phalanx_1_assault_husk" force="false" load="true"/>
 	<object				path="units/pd2_dlc_vip/characters/ene_phalanx_1_assault/ene_phalanx_1_assault" force="false" />
-	<material_config	path="units/pd2_dlc_vip/characters/ene_titan_rifle/ene_titan_rifle" force="false"/>
-	<material_config	path="units/pd2_dlc_vip/characters/ene_titan_rifle/ene_titan_rifle_contour" force="false"/>
+	<material_config	path="units/pd2_dlc_vip/characters/ene_phalanx_1_assault/ene_phalanx_1_assault" force="false"/>
+	<material_config	path="units/pd2_dlc_vip/characters/ene_phalanx_1_assault/ene_phalanx_1_assault_contour" force="false"/>
 	<model				path="units/pd2_dlc_vip/characters/ene_phalanx_1_assault/ene_phalanx_1_assault" force="false" />
 
 	<texture			path="units/pd2_dlc_vip/characters/shared_textures/ene_phalanx_snp_df" force="false"/>
@@ -468,6 +501,8 @@
 	<model				path="units/pd2_mod_sharks/characters/ene_titan_rifle/ene_titan_rifle" force="false"/>
 	<material_config	path="units/pd2_mod_sharks/characters/ene_titan_rifle/ene_titan_rifle" force="false"/>
 	<material_config	path="units/pd2_mod_sharks/characters/ene_titan_rifle/ene_titan_rifle_contour" force="false"/>
+	<unit				path="units/pd2_mod_sharks/characters/ene_murky_elite_guard_3/ene_murky_elite_guard_3" force="false" load="true"/>
+	<unit				path="units/pd2_mod_sharks/characters/ene_murky_elite_guard_3/ene_murky_elite_guard_3_husk" force="false" load="true"/> 
 
 	<!--Omnia LPF-->
 	<object				path="units/pd2_dlc_vip/characters/ene_omnia_lpf/ene_omnia_lpf" force="false"/>

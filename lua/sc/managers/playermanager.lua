@@ -53,6 +53,7 @@ function PlayerManager:body_armor_skill_multiplier(override_armor)
 	multiplier = multiplier + self:upgrade_value("player", "perk_armor_loss_multiplier", 1) - 1
 	multiplier = multiplier + self:upgrade_value("player", tostring(override_armor or managers.blackmarket:equipped_armor(true, true)) .. "_armor_multiplier", 1) - 1
 	multiplier = multiplier + self:upgrade_value("player", "chico_armor_multiplier", 1) - 1
+	multiplier = multiplier + self:upgrade_value("player", "mrwi_armor_multiplier", 1) - 1
 	multiplier = multiplier + self:upgrade_value("team", "crew_add_armor", 1) - 1 --Added bot armor boost.
 
 	return multiplier
@@ -90,6 +91,7 @@ function PlayerManager:movement_speed_multiplier(speed_state, bonus_multiplier, 
 
 	if speed_state then
 		multiplier = multiplier + self:upgrade_value("player", speed_state .. "_speed_multiplier", 1) - 1
+		multiplier = multiplier + self:upgrade_value("player", "mrwi_" .. speed_state .. "_speed_multiplier", 1) - 1
 		
 		--Burglar
 		multiplier = multiplier + self:upgrade_value("player", speed_state .. "_speed_multiplier_burglar", 1) - 1
@@ -163,6 +165,48 @@ function PlayerManager:on_killshot(killed_unit, variant, headshot, weapon_id)
 	if self._num_kills % self._SHOCK_AND_AWE_TARGET_KILLS == 0 and self:has_category_upgrade("player", "automatic_faster_reload") then
 		self:_on_enter_shock_and_awe_event()
 	end
+	
+	local selection_index = equipped_unit and equipped_unit:base() and equipped_unit:base():selection_index() or 0
+
+	if selection_index == 1 and self._has_secondary_reload_primary then
+		local kills_to_reload = self:upgrade_value("player", "secondary_reload_primary", 10)
+		local secondary_kills = self:get_property("secondary_reload_primary_kills", 0) + 1
+
+		if kills_to_reload <= secondary_kills then
+			local primary_unit = player_unit:inventory():unit_by_selection(2)
+			local primary_base = alive(primary_unit) and primary_unit:base()
+			local can_reload = primary_base and primary_base.can_reload and primary_base:can_reload()
+
+			if can_reload then
+				primary_base:on_reload()
+				managers.statistics:reloaded()
+				managers.hud:set_ammo_amount(primary_base:selection_index(), primary_base:ammo_info())
+			end
+
+			secondary_kills = 0
+		end
+
+		self:set_property("secondary_reload_primary_kills", secondary_kills)
+	elseif selection_index == 2 and self._has_primary_reload_secondary then
+		local kills_to_reload = self:upgrade_value("player", "primary_reload_secondary", 10)
+		local primary_kills = self:get_property("primary_reload_secondary_kills", 0) + 1
+
+		if kills_to_reload <= primary_kills then
+			local secondary_unit = player_unit:inventory():unit_by_selection(1)
+			local secondary_base = alive(secondary_unit) and secondary_unit:base()
+			local can_reload = secondary_base and secondary_base.can_reload and secondary_base:can_reload()
+
+			if can_reload then
+				secondary_base:on_reload()
+				managers.statistics:reloaded()
+				managers.hud:set_ammo_amount(secondary_base:selection_index(), secondary_base:ammo_info())
+			end
+
+			primary_kills = 0
+		end
+
+		self:set_property("primary_reload_secondary_kills", primary_kills)
+	end	
 
 	self._message_system:notify(Message.OnEnemyKilled, nil, equipped_unit, variant, killed_unit)
 
@@ -261,19 +305,19 @@ function PlayerManager:on_killshot(killed_unit, variant, headshot, weapon_id)
 		end
 	end
 
-
-	if self._on_killshot_t and t < self._on_killshot_t then
-		self._on_killshot_t = self._on_killshot_t - (tweak_data.upgrades.on_killshot_cooldown_reduction or 0)
-		return
-	end
+	local killshot_cooldown_reduction = (variant and variant == "melee" and tweak_data.upgrades.on_killshot_cooldown_reduction_melee) or tweak_data.upgrades.on_killshot_cooldown_reduction or 0
 
 	local regen_armor_bonus = self:upgrade_value("player", "killshot_regen_armor_bonus", 0)
 	local dist_sq = mvector3.distance_sq(player_unit:movement():m_pos(), killed_unit:movement():m_pos())
 	local close_combat_sq = tweak_data.upgrades.close_combat_distance * tweak_data.upgrades.close_combat_distance
-
+	
 	if dist_sq <= close_combat_sq then
-		regen_armor_bonus = regen_armor_bonus + self:upgrade_value("player", "killshot_close_regen_armor_bonus", 0)
-		local panic_chance = self:upgrade_value("player", "killshot_close_panic_chance", 0)
+		if self:has_category_upgrade("player", "killshot_close_regen_armor_bonus") then
+			local killshot_close_regen_armor_bonus = self:upgrade_value("player", "killshot_close_regen_armor_bonus", 0)[1] * ((variant and variant == "melee" and self:upgrade_value("player", "killshot_close_regen_armor_bonus", 0)[2]) or 1)
+			regen_armor_bonus = regen_armor_bonus + killshot_close_regen_armor_bonus
+		end
+		local socio_panic_available = self._on_killshot_t and t > (self._on_killshot_t - killshot_cooldown_reduction) and self:has_category_upgrade("player", "killshot_close_panic_chance")
+		local panic_chance = (socio_panic_available and (self:upgrade_value("player", "killshot_close_panic_chance", 0) * ((variant and variant == "melee" and 2) or 1)) or 0)
 			+ self:upgrade_value("player", "killshot_extra_spooky_panic_chance", 0) --Add Haunt skill to panic chance.
 			+ self:upgrade_value("player", "killshot_spooky_panic_chance", 0) * self:player_unit():character_damage():get_missing_revives()
 		panic_chance = managers.modifiers:modify_value("PlayerManager:GetKillshotPanicChance", panic_chance)
@@ -290,14 +334,23 @@ function PlayerManager:on_killshot(killed_unit, variant, headshot, weapon_id)
 		end
 	end
 
+	--Sociopath killshot cooldown and effects (THINGS NOT EXCLUSIVELY RELATED TO SOCIOPATH'S COOLDOWNS SHOULD NOT BE BELOW THIS)
+	if self._on_killshot_t and t < self._on_killshot_t then
+		if self:has_category_upgrade("player", "killshot_regen_armor_bonus") then
+			self._on_killshot_t = self._on_killshot_t - killshot_cooldown_reduction
+			managers.hud:change_cooldown("sociopath", -killshot_cooldown_reduction)
+		end
+		if self._on_killshot_t > t then
+			return
+		end
+	end
+
 	if damage_ext and regen_armor_bonus > 0 then
 		damage_ext:restore_armor(regen_armor_bonus)
 	end
 
 	local regen_health_bonus = 0
 
-
-	--Sociopath regen.
 	if variant == "melee" then
 		regen_health_bonus = regen_health_bonus + self:upgrade_value("player", "melee_kill_life_leech", 0)
 	end
@@ -307,6 +360,10 @@ function PlayerManager:on_killshot(killed_unit, variant, headshot, weapon_id)
 	end
 
 	self._on_killshot_t = t + (tweak_data.upgrades.on_killshot_cooldown or 0)
+
+	if self:has_category_upgrade("player", "killshot_regen_armor_bonus") then
+		managers.hud:start_buff("sociopath", (tweak_data.upgrades.on_killshot_cooldown or 0))
+	end
 
 	if _G.IS_VR then
 		local steelsight_multiplier = equipped_unit:base():enter_steelsight_speed_multiplier()
@@ -433,6 +490,23 @@ function PlayerManager:critical_hit_chance(detection_risk)
 	local detection_risk_add_crit_chance = managers.player:upgrade_value("player", "detection_risk_add_crit_chance")
 	multiplier = multiplier + self:get_value_from_risk_upgrade(detection_risk_add_crit_chance, self._detection_risk)
 
+	--OFFYERROCKER'S MERC PERK DECK
+	--[ [
+		if self:has_category_upgrade("player","kmerc_crit_chance_per_max_armor") then
+			local upgrade_data = self:upgrade_value("player","kmerc_crit_chance_per_max_armor")
+			local player_unit = self:local_player()
+			if alive(player_unit) then
+				local rate_crit = upgrade_data.crit_chance
+				local rate_armor = upgrade_data.armor_points
+				local dmg_ext = player_unit:character_damage()
+				local max_armor = dmg_ext:_max_armor()
+				
+				local bonus = math.floor(max_armor / rate_armor) * rate_crit
+				multiplier = multiplier + bonus
+			end
+		end
+	--]]
+
 	return multiplier
 end
 
@@ -465,6 +539,13 @@ function PlayerManager:damage_reduction_skill_multiplier(damage_type)
 	multiplier = multiplier * self._properties:get_property("revive_damage_reduction", 1)
 	multiplier = multiplier * self._temporary_properties:get_property("revived_damage_reduction", 1)
 	--Removed vanilla crew chief team DR.
+
+	--OFFYERROCKER'S LIB PERK DECK
+	--[ [
+		if self:has_category_upgrade("player","tachi_hot_cancelled_damage_resistance_consolation") then 
+			multiplier = multiplier * (1 - self:get_property("tachi_damage_resistance",0))
+		end
+	--]]
 
 	--Yakuza DR.
 	local health_ratio = self:player_unit():character_damage():health_ratio()
@@ -510,6 +591,7 @@ end
 --Leaving stance stuff in parameters for compatability.
 function PlayerManager:skill_dodge_chance(running, crouching, on_zipline, override_armor, detection_risk)
 	local chance = self:upgrade_value("player", "passive_dodge_chance", 0)
+	chance = chance + self:upgrade_value("player", "mrwi_dodge_chance", 0)
 	
 	chance = chance + self:upgrade_value("player", "tier_dodge_chance", 0)
 
@@ -532,6 +614,10 @@ function PlayerManager:health_skill_multiplier()
 	multiplier = multiplier + self:team_upgrade_value("health", "passive_multiplier", 1) - 1
 	multiplier = multiplier + self:get_hostage_bonus_multiplier("health") - 1
 	multiplier = multiplier * self:upgrade_value("player", "health_decrease", 1.0) --Anarchist reduces health by expected amount.
+	multiplier = multiplier + self:upgrade_value("player", "mrwi_health_multiplier", 1) - 1
+
+	--OFFYERROCKER'S MERC PERK DECK
+		multiplier = multiplier + self:upgrade_value("player","kmerc_passive_health_multiplier", 1) - 1
 	
 	return multiplier
 end
@@ -635,6 +721,12 @@ function PlayerManager:check_skills()
 		self._message_system:unregister(Message.OnLethalHeadShot, "play_pda9_headshot")
 	end
 	
+	self._has_primary_reload_secondary = self:has_category_upgrade("player", "primary_reload_secondary")
+	self._has_secondary_reload_primary = self:has_category_upgrade("player", "secondary_reload_primary")
+
+	self:set_property("primary_reload_secondary_kills", 0)
+	self:set_property("secondary_reload_primary_kills", 0)
+	
 	--New resmod skills for dodge.
 	if self:has_category_upgrade("player", "dodge_stacking_heal") then
 		self:register_message(Message.OnPlayerDodge, "dodge_stack_health_regen", callback(self, self, "_dodge_stack_health_regen"))
@@ -697,6 +789,34 @@ function PlayerManager:check_skills()
 	else
 		self._message_system:unregister(Message.OnEnemyKilled, "expres_store_health")
 	end
+
+	--OFFYERROCKER'S MERC PERK DECK
+	--[ [
+		if self:has_category_upgrade("player","kmerc_fatal_triggers_invuln") then
+			self:set_property("kmerc_invuln_ready",true)
+		else
+			self:remove_property("kmerc_invuln_ready")
+		end
+	--]]
+	--OFFYERROCKER'S LIB PERK DECK
+	--[ [
+		if self:has_category_upgrade("player","tachi_base") then 
+			local base_upgrade_data = self:upgrade_value("player","tachi_base")
+			local cooldown_drain = base_upgrade_data.cooldown_drain_per_kill
+			
+			self:register_message(Message.OnEnemyKilled,"tachi_syringe_cooldown_drain_on_kill",
+				function(equipped_unit,variant,killed_unit)
+					local player = self:local_player()
+					if alive(player) then
+						managers.player:speed_up_grenade_cooldown(cooldown_drain)
+					end
+				end
+			)
+			
+		else
+			self:unregister_message(Message.OnEnemyKilled,"tachi_syringe_cooldown_drain_on_kill")
+		end
+	--]]
 end
 
 --The OnHeadShot message must now pass in attack data and unit info to let certains skills work as expected.
@@ -722,6 +842,12 @@ function PlayerManager:on_headshot_dealt(unit, attack_data)
 
 	if damage_ext and regen_armor_bonus > 0 then
 		damage_ext:restore_armor(regen_armor_bonus)
+	end
+
+	local regen_health_bonus = managers.player:upgrade_value("player", "headshot_regen_health_bonus", 0)
+
+	if damage_ext and regen_health_bonus > 0 then
+		damage_ext:restore_health(regen_health_bonus, true)
 	end
 end
 
@@ -750,7 +876,8 @@ function PlayerManager:get_max_grenades(grenade_id)
 
 	--Jack of all trades basic grenade count increase.
 	--MAY be source of grenade syncing issues due to interaction with get_max_grenades_by_peer_id(). Is worth investigating some time.
-	if max_amount and not tweak_data:get_raw_value("blackmarket", "projectiles", grenade_id, "base_cooldown") then
+	local is_perk_throwable = tweak_data:get_raw_value("blackmarket", "projectiles", grenade_id, "base_cooldown") and not tweak_data:get_raw_value("blackmarket", "projectiles", grenade_id, "base_cooldown_no_perk")
+	if max_amount and not is_perk_throwable then
 		max_amount = math.ceil(max_amount * self:upgrade_value("player", "throwables_multiplier", 1.0))
 	end
 	max_amount = managers.modifiers:modify_value("PlayerManager:GetThrowablesMaxAmount", max_amount)
@@ -790,8 +917,9 @@ function PlayerManager:_internal_load()
 	if self:has_grenade(peer_id) then
 		amount = self:get_grenade_amount(peer_id) or amount
 	end
-
-	if amount and not grenade.base_cooldown then --*Should* stop perk deck actives from being increased.
+	
+	local is_perk_throwable = grenade.base_cooldown and not grenade.base_cooldown_no_perk
+	if amount and not is_perk_throwable then --*Should* stop perk deck actives from being increased.
 		amount = managers.modifiers:modify_value("PlayerManager:GetThrowablesMaxAmount", amount) --Crime spree throwables mod.
 		amount = math.ceil(amount * self:upgrade_value("player", "throwables_multiplier", 1.0)) --JOAT Basic
 	end
@@ -865,7 +993,7 @@ function PlayerManager:_internal_load()
 	if self:has_category_upgrade("cooldown", "long_dis_revive") then
 		managers.hud:add_skill("long_dis_revive")
 	end
-
+	
 	if self:has_category_upgrade("player", "cocaine_stacking") then
 		self:update_synced_cocaine_stacks_to_peers(0, self:upgrade_value("player", "sync_cocaine_upgrade_level", 1), self:upgrade_level("player", "cocaine_stack_absorption_multiplier", 0))
 		managers.hud:set_info_meter(nil, {
@@ -911,11 +1039,15 @@ function PlayerManager:_dodge_smokebomb_cdr()
 	self:speed_up_grenade_cooldown(tweak_data.upgrades.values.player.bomb_cooldown_reduction[1])
 end
 
---Fills dodge meter when backstab kills are done.
-function PlayerManager:add_backstab_dodge()
-	if self.player_unit then
-		local damage_ext = self:player_unit():character_damage()
-		damage_ext:fill_dodge_meter(damage_ext:get_dodge_points() * self:upgrade_value("player", "backstab_dodge", 0))
+--Fills dodge meter when headshot and/or backstab kills are done.
+function PlayerManager:add_backstab_dodge(was_backstab, was_headshot)
+	if self:has_category_upgrade("player", "backstab_dodge") then
+		local headshot_add = (was_headshot and self:upgrade_value("player", "backstab_dodge", 0)[1]) or 0
+		local backstab_add = (was_backstab and self:upgrade_value("player", "backstab_dodge", 0)[2]) or 0
+		if self.player_unit then
+			local damage_ext = self:player_unit():character_damage()
+			damage_ext:fill_dodge_meter(damage_ext:get_dodge_points() * (backstab_add + headshot_add))
+		end
 	end
 end
 
@@ -977,14 +1109,20 @@ end
 
 --Slows the player by a % that decays linearly over a duration, along with a visual.
 --Power should be between 1 and 0. Corresponds to % speed is slowed on start.
-function PlayerManager:apply_slow_debuff(duration, power)
+function PlayerManager:apply_slow_debuff(duration, power, was_from_enemy, ignore_hud)
+	if was_from_enemy and self:has_category_upgrade("player", "slowing_bullet_resistance") then
+		duration = duration * (self:upgrade_value("player", "slowing_bullet_resistance", 0).duration)
+		power = (1 + power) * (self:upgrade_value("player", "slowing_bullet_resistance", 0).power)
+	end
 	if power > 1 - self:_slow_debuff_mult() then
 		self._slow_data = {
 			duration = duration,
 			power = power,
 			start_time = Application:time()
 		}
-		managers.hud:activate_effect_screen(duration, {0.0, 0.2, power})
+		if not ignore_hud then
+			managers.hud:activate_effect_screen(duration, {0.0, 0.2, power})
+		end
 	end
 end
 
@@ -1001,7 +1139,7 @@ end
 --Called when psychoknife kills are performed.
 function PlayerManager:spread_psycho_knife_panic()
 	local pos = self:player_unit():position()
-	local area = 1000
+	local area = 1200
 	local chance = 1
 	local amount = 200
 	local enemies = World:find_units_quick("sphere", pos, area, 12, 21)
@@ -1027,11 +1165,11 @@ function PlayerManager:check_selected_equipment_placement_valid(player)
 	end
 end
 
---Professional aced extra ammo when killing specials.
+--Professional aced extra ammo when killing specials and elites.
 function PlayerManager:_on_spawn_special_ammo_event(equipped_unit, variant, killed_unit)
-	if killed_unit.base and tweak_data.character[killed_unit:base()._tweak_table].priority_shout and variant == "bullet" then
-		local tracker = killed_unit:movement():nav_tracker()
-	    local position = tracker:lost() and tracker:field_position() or tracker:position()
+	if killed_unit.base and tweak_data.character[killed_unit:base()._tweak_table].priority_shout and variant and variant == "bullet" then
+		local tracker = killed_unit.movement and killed_unit:movement():nav_tracker()
+	    local position = tracker and tracker:lost() and tracker:field_position() or tracker:position()
 	    local rotation = killed_unit:rotation()
 		if Network:is_client() then
 			managers.network:session():send_to_host("sync_spawn_extra_ammo", position, rotation)
@@ -1120,12 +1258,12 @@ function PlayerManager:check_enduring()
 			self._assaults_to_extra_revive = math.max(self._assaults_to_extra_revive - 1, 0)
 			if self._assaults_to_extra_revive == 0 then
 				damage_ext:add_revive()
-				managers.hud:show_hint( { text = "Assaults Survived- Restoring 1 Down" } )
+				managers.hud:show_hint( { text = managers.localization:text("hud_assault_restored_down") } )
 				self._assaults_to_extra_revive = Global.game_settings.single_player and 1 or 2
 			elseif self._assaults_to_extra_revive == 1 then
-				managers.hud:show_hint( { text = "1 Assault Remaining Until Down Restore." } )
+				managers.hud:show_hint( { text = managers.localization:text("hud_assault_remaining_single") } )
 			else
-				managers.hud:show_hint( { text = tostring(self._assaults_to_extra_revive) .. " Assaults Remaining Until Down Restore." } )
+				managers.hud:show_hint( { text = tostring(self._assaults_to_extra_revive) .. managers.localization:text("hud_assault_remaining_plural") } )
 			end
 		end
 	end

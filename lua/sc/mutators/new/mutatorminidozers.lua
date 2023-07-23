@@ -32,7 +32,7 @@ function MutatorMinidozers:setup(data)
 		table.insert(unit_types.murkywater, Idstring("units/pd2_mod_sharks/characters/ene_murky_fbi_tank_benelli/ene_murky_fbi_tank_benelli"))
 		table.insert(unit_types.nypd, classic_mini_unit_name)
 		table.insert(unit_types.lapd, classic_mini_unit_name)	
-		table.insert(unit_types.fbi, classic_mini_unit_name)	
+		table.insert(unit_types.fbi, classic_mini_unit_name)
 	
 		table.insert(unit_types_black.america, classic_mini_unit_name)
 		table.insert(unit_types_black.russia, Idstring("units/pd2_mod_reapers/characters/ene_bulldozer_mini/ene_bulldozer_mini"))

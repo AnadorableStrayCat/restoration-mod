@@ -544,6 +544,7 @@ function WeaponDescription._get_skill_swap_speed(name, base_stats, mods_stats, s
 	local weapon_tweak = tweak_data.weapon[name]
 	local multiplier = 1
 	multiplier = multiplier * managers.player:upgrade_value("weapon", "swap_speed_multiplier", 1)
+	multiplier = multiplier * managers.player:upgrade_value("weapon", "mrwi_swap_speed_multiplier", 1)
 	multiplier = multiplier * managers.player:upgrade_value("weapon", "passive_swap_speed_multiplier", 1)
 
 	--Get per category multipliers (IE: Pistols swap faster, Akimbos swap slower, ect).
@@ -582,6 +583,13 @@ function WeaponDescription._get_base_range(weapon, name, base_stats, calc_min)
 		end
 	end
 
+	local custom_data = managers.weapon_factory:get_custom_stats_from_weapon(weapon.factory_id, weapon.blueprint) or {}
+	for part_id, stats in pairs(custom_data) do
+		if stats.rays then
+			has_range = true
+		end
+	end
+
 	if has_range then
 		local base_range = weapon_tweak.damage_falloff and weapon_tweak.damage_falloff.start_dist or 3000
 		local range = base_range
@@ -607,6 +615,13 @@ function WeaponDescription._get_mods_range(weapon, name, base_stats, mods_stats,
 		local category = weapon_tweak.categories[i]
 		if category == "rocket_frag" or category == "grenade_launcher" or category == "bow" or category == "saw" or category == "crossbow" then
 			has_range = nil
+		end
+	end
+
+	local custom_data = managers.weapon_factory:get_custom_stats_from_weapon(weapon.factory_id, weapon.blueprint) or {}
+	for part_id, stats in pairs(custom_data) do
+		if stats.rays then
+			has_range = true
 		end
 	end
 
@@ -745,20 +760,33 @@ function WeaponDescription._get_base_damage_min(weapon, name, base_stats)
 	local weapon_tweak = tweak_data.weapon[name]
 	local damage_base = base_stats.damage.value
 	local damage_min_mult = weapon_tweak.damage_falloff and weapon_tweak.damage_falloff.min_mult or 0.3
+	local rays = weapon_tweak and weapon_tweak.rays
 	local ignore_rays = (weapon_tweak.damage_falloff and weapon_tweak.damage_falloff.ignore_rays) or false
+	local gl_buck = nil
 	
 	local ammo_data = managers.weapon_factory:get_ammo_data_from_weapon(weapon.factory_id, weapon.blueprint) or {}
 	local custom_data = managers.weapon_factory:get_custom_stats_from_weapon(weapon.factory_id, weapon.blueprint) or {}
-	if ignore_rays == false and weapon_tweak.rays and weapon_tweak.rays > 1 then
+	for part_id, stats in pairs(custom_data) do
+		if stats.gl_buck then
+			gl_buck = true
+		end
+	end
+
+	if ignore_rays == false and rays and rays > 1 then
 		damage_min_mult = 0.05
 	end
 
+	if gl_buck then
+		damage_min_mult = damage_min_mult / 2
+	end
 
-	for i = 1, #weapon_tweak.categories do
-		local category = weapon_tweak.categories[i]
-		if category == "flamethrower" or category == "rocket_frag" or category == "grenade_launcher" or category == "bow" or category == "saw" or category == "crossbow" then
-			damage_min_mult = 0
-			damage_base = 0
+	if not gl_buck then
+		for i = 1, #weapon_tweak.categories do
+			local category = weapon_tweak.categories[i]
+			if category and category == "flamethrower" or category == "rocket_frag" or category == "grenade_launcher" or category == "bow" or category == "saw" or category == "crossbow" then
+				damage_min_mult = 0
+				damage_base = 0
+			end
 		end
 	end
 
@@ -771,6 +799,8 @@ function WeaponDescription._get_mods_damage_min(weapon, name, base_stats, mods_s
 	local damage_mods = mods_stats.damage.value
 	local damage_min_mult = weapon_tweak.damage_falloff and weapon_tweak.damage_falloff.min_mult or 0.3
 	local ignore_rays = (weapon_tweak.damage_falloff and weapon_tweak.damage_falloff.ignore_rays) or weapon_tweak.ignore_rays or false
+	local rays = weapon_tweak and weapon_tweak.rays
+	local gl_buck = nil
 
 	local ammo_data = managers.weapon_factory:get_ammo_data_from_weapon(weapon.factory_id, weapon.blueprint) or {}
 	if weapon_tweak.rays and weapon_tweak.rays > 1 and not (ammo_data.rays and ammo_data.rays == 1) then
@@ -779,6 +809,9 @@ function WeaponDescription._get_mods_damage_min(weapon, name, base_stats, mods_s
 
 	local custom_data = managers.weapon_factory:get_custom_stats_from_weapon(weapon.factory_id, weapon.blueprint) or {}
 	for part_id, stats in pairs(custom_data) do
+		if stats.damage_min_mult then
+			damage_min_mult = damage_min_mult * stats.damage_min_mult
+		end
 		if stats.bullet_class and stats.bullet_class == "InstantExplosiveBulletBase" then
 			damage_min_mult = 1
 		end
@@ -786,26 +819,29 @@ function WeaponDescription._get_mods_damage_min(weapon, name, base_stats, mods_s
 			ignore_rays = false
 		end
 	end
-
-	damage_mods = (damage_mods + damage_base) * damage_min_mult 
-
-
-
-	if ignore_rays == false and weapon_tweak.rays and weapon_tweak.rays > 1 then
+	
+	if ignore_rays == false and rays and rays > 1 then
+		damage_mods = (damage_mods + damage_base) * damage_min_mult 
 		damage_min_mult = 0.05
+	else
+		damage_min_mult = weapon_tweak.damage_falloff and weapon_tweak.damage_falloff.min_mult or 0.3
+		damage_mods = (damage_mods + damage_base) * damage_min_mult 
 	end
+	
 	damage_base = damage_base * damage_min_mult 
 
-	for i = 1, #weapon_tweak.categories do
-		local category = weapon_tweak.categories[i]
-		if category == "flamethrower" or category == "rocket_frag" or category == "grenade_launcher" or category == "bow" or category == "saw" or category == "crossbow" then
-			damage_min_mult = 0
-			damage_mods = 0
-			damage_base = 0
+	if not gl_buck then
+		for i = 1, #weapon_tweak.categories do
+			local category = weapon_tweak.categories[i]
+			if category and category == "flamethrower" or category == "rocket_frag" or category == "grenade_launcher" or category == "bow" or category == "saw" or category == "crossbow" then
+				damage_min_mult = 0
+				damage_mods = 0
+				damage_base = 0
+			end
 		end
 	end
 	
-	return damage_mods - damage_base
+	return math.round((damage_mods - damage_base) * 100) / 100
 end
 
 function WeaponDescription._get_skill_damage_min(weapon, name, base_stats, mods_stats)
@@ -833,6 +869,9 @@ function WeaponDescription._get_skill_damage_min(weapon, name, base_stats, mods_
 
 	local custom_data = managers.weapon_factory:get_custom_stats_from_weapon(weapon.factory_id, weapon.blueprint) or {}
 	for part_id, stats in pairs(custom_data) do
+		if stats.damage_min_mult then
+			damage_min_mult = damage_min_mult * stats.damage_min_mult
+		end
 		if stats.bullet_class and stats.bullet_class == "InstantExplosiveBulletBase" then
 			damage_min_mult = 1
 		end

@@ -136,9 +136,7 @@ local enemies_plink = {
 	ids_func("units/pd2_mod_halloween/characters/ene_zeal_swat_heavy_r870_sc/ene_zeal_swat_heavy_r870_sc"),
 	ids_func("units/pd2_mod_halloween/characters/ene_zeal_swat_heavy_r870_sc/ene_zeal_swat_heavy_r870_sc_husk"),                 	
 	ids_func("units/pd2_mod_halloween/characters/ene_city_heavy_r870_sc/ene_city_heavy_r870_sc"),
-	ids_func("units/pd2_mod_halloween/characters/ene_city_heavy_r870_sc/ene_city_heavy_r870_sc_husk"),                 	
-	ids_func("units/pd2_dlc_hvh/characters/ene_fbi_heavy_hvh_r870/ene_fbi_heavy_hvh_r870"),
-	ids_func("units/pd2_dlc_hvh/characters/ene_fbi_heavy_hvh_r870/ene_fbi_heavy_hvh_r870_husk"),
+	ids_func("units/pd2_mod_halloween/characters/ene_city_heavy_r870_sc/ene_city_heavy_r870_sc_husk"),
 	
 	ids_func("units/pd2_mod_sharks/characters/ene_fbi_heavy_r870/ene_fbi_heavy_r870"),
 	ids_func("units/pd2_mod_sharks/characters/ene_fbi_heavy_r870/ene_fbi_heavy_r870_husk"),   	
@@ -154,28 +152,43 @@ local enemies_plink = {
 	ids_func("units/pd2_dlc_bex/characters/ene_zeal_swat_heavy_r870/ene_zeal_swat_heavy_r870"),
 	ids_func("units/pd2_dlc_bex/characters/ene_zeal_swat_heavy_r870/ene_zeal_swat_heavy_r870_husk"),
 
-	ids_func("units/pd2_dlc_mad/characters/ene_akan_fbi_heavy_dw/ene_akan_fbi_heavy_dw"),
-	ids_func("units/pd2_dlc_mad/characters/ene_akan_fbi_heavy_dw/ene_akan_fbi_heavy_dw_husk"),
 	ids_func("units/pd2_mod_reapers/characters/ene_fbi_heavy_1/ene_fbi_heavy_1"),
 	ids_func("units/pd2_mod_reapers/characters/ene_fbi_heavy_1/ene_fbi_heavy_1_husk"),
 	ids_func("units/pd2_mod_reapers/characters/ene_fbi_heavy_r870/ene_fbi_heavy_r870"),
 	ids_func("units/pd2_mod_reapers/characters/ene_fbi_heavy_r870/ene_fbi_heavy_r870_husk"),
-	ids_func("units/pd2_dlc_mad/characters/ene_akan_fbi_heavy_dw_r870/ene_akan_fbi_heavy_dw_r870"),
-	ids_func("units/pd2_dlc_mad/characters/ene_akan_fbi_heavy_dw_r870/ene_akan_fbi_heavy_dw_r870_husk"),
 	
 }
 
 local grenadier_smash = {
 	ids_func("units/payday2/characters/ene_grenadier_1/ene_grenadier_1"),
 	ids_func("units/payday2/characters/ene_grenadier_1/ene_grenadier_1_husk"),
-	ids_func("units/pd2_dlc_mad/characters/ene_titan_taser/ene_titan_taser"),
-	ids_func("units/pd2_dlc_mad/characters/ene_titan_taser/ene_titan_taser_husk"),
+	ids_func("units/pd2_mod_reapers/characters/ene_titan_taser/ene_titan_taser"),
+	ids_func("units/pd2_mod_reapers/characters/ene_titan_taser/ene_titan_taser_husk"),
 	ids_func("units/pd2_dlc_gitgud/characters/ene_grenadier_1/ene_grenadier_1"),
 	ids_func("units/pd2_dlc_gitgud/characters/ene_grenadier_1/ene_grenadier_1_husk"),     	
 	ids_func("units/pd2_dlc_bex/characters/ene_grenadier_1/ene_grenadier_1"),
-	ids_func("units/pd2_dlc_bex/characters/ene_grenadier_1/ene_grenadier_1_husk"),     	
+	ids_func("units/pd2_dlc_bex/characters/ene_grenadier_1/ene_grenadier_1_husk"),   
+	ids_func("units/pd2_mod_nypd/characters/ene_grenadier_1/ene_grenadier_1"),
+	ids_func("units/pd2_mod_nypd/characters/ene_grenadier_1/ene_grenadier_1_husk"),
 	ids_func("units/pd2_mod_sharks/characters/ene_grenadier_1/ene_grenadier_1"),
 	ids_func("units/pd2_mod_sharks/characters/ene_grenadier_1/ene_grenadier_1_husk")    	
+}
+
+local armour = {
+	-- Tans
+	[Idstring("body_plate"):key()] = true,
+	-- Dozer
+	[Idstring("body_helmet"):key()] = true,
+	[Idstring("body_helmet_plate"):key()] = true,
+	[Idstring("body_helmet_glass"):key()] = true,
+	[Idstring("body_armor_chest"):key()] = true,
+	[Idstring("body_armor_stomache"):key()] = true,
+	[Idstring("body_armor_back"):key()] = true,
+	[Idstring("body_armor_throat"):key()] = true,
+	[Idstring("body_armor_neck"):key()] = true,
+	-- Sosa
+	[Idstring("body_vest"):key()] = true,
+	[Idstring("body_ammo"):key()] = true,
 }
 
 Hooks:PostHook(CopDamage, "init", "res_init", function(self, unit)
@@ -259,10 +272,15 @@ function CopDamage:_spawn_head_gadget(params)
 	self._head_gear = false
 end
 
+
 function CopDamage:damage_fire(attack_data)
 	if self._dead or self._invulnerable then
 		return
 	end
+	
+	if self:is_friendly_fire(attack_data.attacker_unit) then
+		return "friendly_fire"
+	end	
 	
 	if self:chk_immune_to_attacker(attack_data.attacker_unit) then
 		return
@@ -431,7 +449,7 @@ function CopDamage:damage_fire(attack_data)
 			}
 
 			self:die(attack_data)
-			self:chk_killshot(attacker_unit, "fire")
+			self:chk_killshot(attack_data.attacker_unit, "fire", head, attack_data.weapon_unit and attack_data.weapon_unit:base():get_name_id())
 		end
 	else
 		attack_data.damage = damage
@@ -483,7 +501,9 @@ function CopDamage:damage_fire(attack_data)
 
 		managers.statistics:killed_by_anyone(data)
 
-		if not is_civilian and managers.player:has_category_upgrade("temporary", "overkill_damage_multiplier") and attacker_unit == managers.player:player_unit() and alive(attack_data.weapon_unit) and not attack_data.weapon_unit:base().thrower_unit and attack_data.weapon_unit:base().is_category and attack_data.weapon_unit:base():is_category("shotgun", "saw") then
+		local weap_base = weap_unit and weap_unit:base()
+		local close_range = weap_base and ((weap_base.is_category and weap_base:is_category("saw")) or (distance <= (weap_base.near_falloff_distance or 100)))
+		if weap_base and not is_civilian and managers.player:has_category_upgrade("temporary", "overkill_damage_multiplier") and attacker_unit == managers.player:player_unit() and alive(attack_data.weapon_unit) and not weap_base.thrower_unit and close_range and weap_base.is_category and weap_base:is_category("shotgun", "saw") then
 			managers.player:activate_temporary_upgrade("temporary", "overkill_damage_multiplier")
 		end
 
@@ -529,6 +549,7 @@ function CopDamage:damage_fire(attack_data)
 
 		if flammable then
 			local fire_dot_max_distance = weap_base and weap_base.far_falloff_distance and weap_base.far_falloff_distance + weap_base.near_falloff_distance or tonumber(fire_dot_data.dot_trigger_max_distance) or 3000
+			local fire_dot_panic_max_distance = weap_base and weap_base.near_falloff_distance or 500
 
 			if distance < fire_dot_max_distance then
 				local start_dot_damage_roll = math.random(1, 100)
@@ -551,6 +572,10 @@ function CopDamage:damage_fire(attack_data)
 						use_animation_on_fire_damage = true
 					else
 						use_animation_on_fire_damage = self._char_tweak.use_animation_on_fire_damage
+					end
+					
+					if not (attack_data.is_fire_pool_damage or attack_data.is_molotov) and distance > fire_dot_panic_max_distance then
+						use_animation_on_fire_damage = nil
 					end
 
 					if use_animation_on_fire_damage then
@@ -618,6 +643,7 @@ function CopDamage:sync_damage_fire(attacker_unit, damage_percent, start_dot_dan
 
 	if not weapon_unit and weapon_id ~= "molotov" then
 		weapon_unit = attacker_unit and attacker_unit:inventory() and alive(attacker_unit:inventory():equipped_unit()) and attacker_unit:inventory():equipped_unit()
+		attack_data.is_fire_pool_damage = true
 	end
 
 	local hit_pos = mvector3.copy(self._unit:position())
@@ -680,7 +706,7 @@ function CopDamage:sync_damage_fire(attacker_unit, damage_percent, start_dot_dan
 		}
 
 		self:die(attack_data)
-		self:chk_killshot(attacker_unit, "fire")
+		self:chk_killshot(attacker_unit, "fire", false, attack_data.weapon_unit and attack_data.weapon_unit:base():get_name_id())
 
 		local data = {
 			variant = variant,
@@ -791,13 +817,16 @@ function CopDamage:damage_bullet(attack_data)
 
 	local is_civilian = CopDamage.is_civilian(self._unit:base()._tweak_table)
 	local damage = attack_data.damage
-
-	if self._has_plate and attack_data.col_ray.body and attack_data.col_ray.body:name() == self._ids_plate_name then
+	
+	local ignore = self._unit:base()._tweak_table == "spring" or self._unit:base()._tweak_table == "tank_titan"	or self._unit:base()._tweak_table == "headless_hatman" or self._unit:base()._tweak_table == "tank_titan_assault"	
+	
+	local hit_body = attack_data.col_ray.body
+	if armour[hit_body:name():key()] and not ignore then -- dozer armour negates damage
 		local pierce_armor = nil
 		
 		--Just as a fallback, ugly as sin but whatever
 		if attack_data.attacker_unit:base() and not attack_data.attacker_unit:base().sentry_gun and not weap_base.thrower_unit then
-			if not attack_data.armor_piercing and attack_data.weapon_unit:base():armor_piercing_chance() and attack_data.weapon_unit:base():armor_piercing_chance() > 0 then
+			if attack_data.weapon_unit:base():armor_piercing_chance() and attack_data.weapon_unit:base():armor_piercing_chance() > 0 then
 				pierce_armor = true
 				damage = damage * attack_data.weapon_unit:base():armor_piercing_chance() or 1
 			end
@@ -814,6 +843,10 @@ function CopDamage:damage_bullet(attack_data)
 				normal = attack_data.col_ray.ray
 			})
 		else
+			if attack_data.attacker_unit == managers.player:player_unit() and hit_body:extension() and hit_body:extension().damage then
+				managers.hud:on_hit_confirmed() -- no damage to the unit, but it did damage the body
+			end
+
 			World:effect_manager():spawn({
 				effect = Idstring("effects/payday2/particles/impacts/steel_no_decal_impact_pd2"),
 				position = attack_data.col_ray.position,
@@ -897,7 +930,8 @@ function CopDamage:damage_bullet(attack_data)
 
 	if not self._damage_reduction_multiplier and head then
 		local weapon_hs_mult = attack_data.weapon_unit:base()._hs_mult
-		if weapon_hs_mult then
+		local is_captain = self._char_tweak.ends_assault_on_death
+		if weapon_hs_mult and not is_captain then
 			damage = damage * weapon_hs_mult
 		end
 		if self._char_tweak.headshot_dmg_mul then
@@ -919,7 +953,7 @@ function CopDamage:damage_bullet(attack_data)
 		end
 	end
 
-	if not head and attack_data.attacker_unit == managers.player:player_unit() and not self._char_tweak.must_headshot and self._char_tweak.headshot_dmg_mul then
+	if not head and attack_data.attacker_unit == managers.player:player_unit() and not self._char_tweak.must_headshot and not self._char_tweak.priority_shout and self._char_tweak.headshot_dmg_mul then
 		if (weap_base.fire_mode and weap_base:fire_mode() == "auto") and weap_base.is_category and (weap_base:is_category("smg", "lmg", "minigun") and managers.player:has_category_upgrade("weapon", "automatic_head_shot_add") or managers.player:has_category_upgrade("player", "universal_body_expertise")) then
 			attack_data.add_head_shot_mul = managers.player:upgrade_value("weapon", "automatic_head_shot_add", nil)
 		end
@@ -1079,12 +1113,13 @@ function CopDamage:damage_bullet(attack_data)
 				type = "death",
 				variant = attack_data.variant
 			}
-
-			if attack_data.backstab then
-				managers.player:add_backstab_dodge()
+			
+			if is_player and (attack_data.backstab or head) then
+				managers.player:add_backstab_dodge(attack_data.backstab, head)
 			end
+			
 			self:die(attack_data)
-			self:chk_killshot(attack_data.attacker_unit, "bullet", headshot_by_player)
+			self:chk_killshot(attack_data.attacker_unit, "bullet", headshot_by_player, attack_data.weapon_unit:base():get_name_id())
 		end
 	else
 		attack_data.damage = damage
@@ -1138,7 +1173,9 @@ function CopDamage:damage_bullet(attack_data)
 			managers.statistics:killed(data)
 			self:_check_damage_achievements(attack_data, head)
 
-			if not is_civilian and managers.player:has_category_upgrade("temporary", "overkill_damage_multiplier") and not weap_base.thrower_unit and weap_base:is_category("shotgun", "saw") then
+
+			local close_range = weap_base and ((weap_base.is_category and weap_base:is_category("saw")) or (distance <= (weap_base.near_falloff_distance or 100)))
+			if not is_civilian and managers.player:has_category_upgrade("temporary", "overkill_damage_multiplier") and not weap_base.thrower_unit and close_range and weap_base:is_category("shotgun", "saw") then
 				managers.player:activate_temporary_upgrade("temporary", "overkill_damage_multiplier")
 			end
 
@@ -1312,13 +1349,13 @@ function CopDamage:sync_damage_bullet(attacker_unit, damage_percent, i_body, hit
 		}
 
 		self:die(attack_data)
-		self:chk_killshot(attacker_unit, "bullet")
+		self:chk_killshot(attacker_unit, "bullet", head, attack_data.weapon_unit and attack_data.weapon_unit:base():get_name_id())
 
 		local data = {
 			name = self._unit:base()._tweak_table,
 			stats_name = self._unit:base()._stats_name,
 			head_shot = head,
-			weapon_unit = attacker_unit and attacker_unit:inventory() and attacker_unit:inventory():equipped_unit(),
+			weapon_unit = attack_data.weapon_unit,
 			variant = attack_data.variant
 		}
 
@@ -1540,12 +1577,12 @@ function CopDamage:damage_melee(attack_data)
 				variant = "melee"
 			}
 
-			if attack_data.backstab then
-				managers.player:add_backstab_dodge()
+			if is_player and (attack_data.backstab or head) then
+				managers.player:add_backstab_dodge(attack_data.backstab, head)
 			end
 
 			self:die(attack_data)
-			self:chk_killshot(attack_data.attacker_unit, "melee")
+			self:chk_killshot(attack_data.attacker_unit, "melee", false, attack_data.name_id)
 		end
 	else
 		attack_data.damage = damage
@@ -1593,9 +1630,16 @@ function CopDamage:damage_melee(attack_data)
 	attack_data.result = result
 	attack_data.pos = attack_data.col_ray.position
 
+	local dismember_victim = false
 	local snatch_pager, from_behind = nil
 
 	if result.type == "death" then
+		if self:_dismember_condition(attack_data) then
+			self:_dismember_body_part(attack_data)
+
+			dismember_victim = true
+		end
+
 		local data = {
 			name = self._unit:base()._tweak_table,
 			stats_name = self._unit:base()._stats_name,
@@ -1836,7 +1880,7 @@ function CopDamage:sync_damage_melee(attacker_unit, damage_percent, damage_effec
 		}
 
 		self:die(attack_data)
-		self:chk_killshot(attacker_unit, "melee")
+		self:chk_killshot(attacker_unit, "melee", false, nil)
 
 		local data = {
 			name = self._unit:base()._tweak_table,
@@ -2242,6 +2286,7 @@ function CopDamage:damage_explosion(attack_data)
 
 	attack_data.result = result
 	attack_data.pos = attack_data.col_ray.position
+
 	result.ignite_character = attack_data.ignite_character
 
 	if result.type == "death" then
@@ -2254,6 +2299,11 @@ function CopDamage:damage_explosion(attack_data)
 		}
 
 		managers.statistics:killed_by_anyone(data)
+
+		if attacker_unit and attacker_unit:base() and attacker_unit:base().thrower_unit then
+			attacker_unit = attacker_unit:base():thrower_unit()
+			data.weapon_unit = attack_data.attacker_unit
+		end
 
 		if attack_data.variant ~= "stun" then
 			if table_contains(grenadier_smash, self._unit:name()) then
@@ -2272,12 +2322,13 @@ function CopDamage:damage_explosion(attack_data)
 		if Network:is_server() and self._char_tweak.gas_on_death then
 			managers.groupai:state():detonate_cs_grenade(self._unit:movement():m_pos() + math.UP * 10, mvector3.copy(self._unit:movement():m_head_pos()), 7.5)
 		end
-
+		--[[
 		if not is_civilian and managers.player:has_category_upgrade("temporary", "overkill_damage_multiplier") and attacker_unit == managers.player:player_unit() and attack_data.weapon_unit and attack_data.weapon_unit:base().weapon_tweak_data and not attack_data.weapon_unit:base().thrower_unit and attack_data.weapon_unit:base():is_category("shotgun", "saw") then
 			managers.player:activate_temporary_upgrade("temporary", "overkill_damage_multiplier")
 		end
+		]]
 
-		self:chk_killshot(attacker_unit, "explosion")
+		self:chk_killshot(attacker_unit, "explosion", false, attack_data.weapon_unit and attack_data.weapon_unit:base():get_name_id())
 
 		if attacker_unit == managers.player:player_unit() then
 			if alive(attacker_unit) then
@@ -2345,7 +2396,7 @@ function CopDamage:sync_damage_explosion(attacker_unit, damage_percent, i_attack
 	local attack_data = {
 		variant = variant,
 		attacker_unit = attacker_unit,
-		weapon_unit = weapon_unit
+		weapon_unit = weapon_unit or attacker_unit and attacker_unit:inventory() and attacker_unit:inventory():equipped_unit()
 	}
 
 	local attacker = attack_data.attacker_unit
@@ -2432,8 +2483,8 @@ function CopDamage:sync_damage_explosion(attacker_unit, damage_percent, i_attack
 
 		managers.statistics:killed_by_anyone(data)
 
-		self:chk_killshot(attacker, "explosion")
-
+		self:chk_killshot(attacker, "explosion", false, attack_data.weapon_unit and attack_data.weapon_unit:base():get_name_id())
+		
 		if attacker == managers.player:player_unit() then
 			if alive(attacker) then
 				self:_comment_death(attacker, self._unit)
@@ -2471,6 +2522,10 @@ function CopDamage:sync_damage_explosion(attacker_unit, damage_percent, i_attack
 
 	if damage > 0 and variant ~= "stun" and attacker == managers.player:player_unit() and alive(attacker) then
 		managers.hud:on_hit_confirmed()
+		managers.statistics:shot_fired({
+			hit = true,
+			weapon_unit = attack_data.weapon_unit
+		})
 	end
 
 	if alive(weapon_unit) and weapon_unit:base() and weapon_unit:base().add_damage_result then
@@ -2536,7 +2591,6 @@ function CopDamage:damage_simple(attack_data)
 			}
 
 			self:die(attack_data)
-			self:chk_killshot(attacker_unit, "shock")
 		end
 	else
 		attack_data.damage = damage
@@ -2594,9 +2648,13 @@ function CopDamage:damage_simple(attack_data)
 			data.weapon_unit = attack_data.attacker_unit
 		end
 
+		--[[
 		if not is_civilian and managers.player:has_category_upgrade("temporary", "overkill_damage_multiplier") and attacker_unit == managers.player:player_unit() and attack_data.weapon_unit and attack_data.weapon_unit:base().weapon_tweak_data and not attack_data.weapon_unit:base().thrower_unit and attack_data.weapon_unit:base():is_category("shotgun", "saw") then
 			managers.player:activate_temporary_upgrade("temporary", "overkill_damage_multiplier")
 		end
+		]]
+
+		self:chk_killshot(attacker_unit, "shock", false, attack_data.weapon_unit and attack_data.weapon_unit:base():get_name_id())
 
 		if attacker_unit == managers.player:player_unit() then
 			if alive(attacker_unit) then
@@ -2699,7 +2757,7 @@ function CopDamage:sync_damage_simple(attacker_unit, damage_percent, i_attack_va
 		}
 
 		self:die(attack_data)
-		self:chk_killshot(attacker_unit, "shock")
+		self:chk_killshot(attacker_unit, variant, false, attack_data.weapon_unit and attack_data.weapon_unit:base():get_name_id())
 
 		local data = {
 			name = self._unit:base()._tweak_table,
@@ -2845,11 +2903,25 @@ function CopDamage:damage_dot(attack_data)
 			self:_show_death_hint(self._unit:base()._tweak_table)
 			managers.statistics:killed(data)
 
-			if CopDamage.is_civilian(self._unit:base()._tweak_table) then
+			local is_civilian = CopDamage.is_civilian(self._unit:base()._tweak_table)
+
+			if is_civilian then
 				managers.money:civilian_killed()
 			end
 
-			self:_check_damage_achievements(attack_data, false)
+			--[[
+			if not is_civilian and managers.player:has_category_upgrade("temporary", "overkill_damage_multiplier") and attack_data.weapon_unit and attack_data.weapon_unit:base().weapon_tweak_data and not attack_data.weapon_unit:base().thrower_unit and attack_data.weapon_unit:base():is_category("shotgun", "saw") then
+				managers.player:activate_temporary_upgrade("temporary", "overkill_damage_multiplier")
+			end
+			--]]
+
+			if attack_data and attack_data.weapon_id and not attack_data.weapon_unit then
+				attack_data.name_id = attack_data.weapon_id
+
+				self:_check_melee_achievements(attack_data)
+			else
+				self:_check_damage_achievements(attack_data, false)
+			end
 		end
 	end
 
@@ -2875,6 +2947,12 @@ function CopDamage:damage_dot(attack_data)
 
 	self:_send_dot_attack_result(attack_data, attacker, damage_percent, sync_attack_variant)
 	self:_on_damage_received(attack_data)
+
+	result.attack_data = attack_data
+	result.damage_percent = damage_percent
+	result.damage = damage
+	
+	return result
 end
 
 function CopDamage:sync_damage_dot(attacker_unit, damage_percent, death, variant, hurt_animation, weapon_id)
@@ -2910,7 +2988,7 @@ function CopDamage:sync_damage_dot(attacker_unit, damage_percent, death, variant
 		}
 
 		self:die(attack_data)
-		self:chk_killshot(attacker_unit, attack_variant, nil, weapon_id)
+		self:chk_killshot(attacker_unit, attack_variant or "dot", false, weapon_id)
 
 		local real_variant = weapon_id and tweak_data.blackmarket and tweak_data.blackmarket.melee_weapons and tweak_data.blackmarket.melee_weapons[weapon_id] and "melee" or attack_data.variant
 		local data = {
@@ -2991,7 +3069,7 @@ function CopDamage:damage_tase(attack_data)
 		}
 
 		self:die(attack_data)
-		self:chk_killshot(attacker_unit, "tase")
+		self:chk_killshot(attacker_unit, "tase", false, attack_data.weapon_unit and attack_data.weapon_unit:base():get_name_id())
 	else
 		attack_data.damage = damage
 
@@ -3144,7 +3222,7 @@ function CopDamage:sync_damage_tase(attacker_unit, damage_percent, i_result, dea
 		}
 
 		self:die(attack_data)
-		self:chk_killshot(attacker_unit, "tase")
+		self:chk_killshot(attacker_unit, "tase", false, attack_data.weapon_unit)
 
 		local data = {
 			variant = "bullet",
@@ -3692,3 +3770,26 @@ function CopDamage:bag_explode()
 
 	EnvironmentFire.spawn(position, rotation, data, math.UP, nil, 0, 1)			
 end
+
+function CopDamage:_apply_damage_reduction(damage)
+	local damage_reduction = self._unit:movement():team().damage_reduction or 0
+
+	if damage_reduction > 0 then
+		damage = damage * (1 - damage_reduction)
+	end
+
+	if self._damage_reduction_multiplier then
+		damage = damage * self._damage_reduction_multiplier
+	end
+	
+	if managers.mutators:is_mutator_active(MutatorCG22) then
+		local cg22_mutator = managers.mutators:get_mutator(MutatorCG22)
+
+		if cg22_mutator:can_enemy_be_affected_by_buff("blue", self._unit) then
+			damage = damage * cg22_mutator:get_enemy_blue_multiplier()
+		end
+	end
+
+	return damage
+end
+

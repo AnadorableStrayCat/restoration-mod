@@ -49,7 +49,6 @@ Hooks:PostHook( LevelsTweakData, "init", "SC_levels", function(self)
 	end
 	
 	--///MEXICAN LEVELS\\\--
-	self.mex_cooking.package = {"levels/narratives/h_alex_must_die/stage_1/world_sounds", "packages/job_mex2"}
 	self.mex_cooking.ai_group_type = federales 
 	self.mex_cooking.player_style = "suit_sunny"	
 	
@@ -78,12 +77,12 @@ Hooks:PostHook( LevelsTweakData, "init", "SC_levels", function(self)
 	self.arm_for.ai_group_type = murkywater 
 	self.arm_for.player_style = "sneak_suit"
 	
-	self.mex.package = {"levels/narratives/h_alex_must_die/stage_1/world_sounds", "levels/narratives/e_welcome_to_the_jungle/stage_1/world_sounds", "packages/narr_born_1", "packages/job_mex"}
+	self.mex.package = {"packages/miscassets", "packages/job_mex"}
 	self.mex.ai_group_type = murkywater 
 	self.mex.player_style = "suit_sunny"
 
-	self.welcome_to_the_jungle_1.package = {"packages/narr_jungle1", "packages/miscassets", "packages/narr_born_1"}
-	self.welcome_to_the_jungle_1_night.package = {"packages/narr_jungle1_night", "packages/miscassets", "packages/narr_born_1"} --just in case 
+	self.welcome_to_the_jungle_1.package = {"packages/narr_jungle1", "packages/miscassets"}
+	self.welcome_to_the_jungle_1_night.package = {"packages/narr_jungle1_night", "packages/miscassets"} 
 	self.welcome_to_the_jungle_2.ai_group_type = murkywater
 	self.welcome_to_the_jungle_2.player_style = "sneak_suit"	
 
@@ -94,7 +93,9 @@ Hooks:PostHook( LevelsTweakData, "init", "SC_levels", function(self)
 	self.dark.player_style = "sneak_suit"
 	
 	self.kosugi.ai_group_type = murkywater	
-	self.kosugi.player_style = "sneak_suit"	
+	self.kosugi.player_style = "sneak_suit"
+	
+	self.deep.ai_group_type = murkywater
 	
 	--///FBI LEVELS\\\--
 	self.hox_2.player_style = "slaughterhouse"
@@ -142,6 +143,12 @@ Hooks:PostHook( LevelsTweakData, "init", "SC_levels", function(self)
 	self.rat.ai_group_type = fbi
 	
 	self.chill_combat.ai_group_type = fbi
+	
+	self.peta.ai_group_type = fbi
+	self.peta2.ai_group_type = fbi
+	
+	self.sah.ai_group_type = fbi
+	self.sah.flashlights_on = true
 	
 	self.man.package = {"packages/narr_man", "packages/secret_stash"}
 	self.man.player_style = "slaughterhouse"
@@ -200,7 +207,7 @@ Hooks:PostHook( LevelsTweakData, "init", "SC_levels", function(self)
 	
 	--///NYPD LEVELS\\\--
 	self.spa.ai_group_type = nypd
-	self.spa.package = {"packages/job_spa", "levels/narratives/dentist/mia/stage2/world_sounds"}
+	self.spa.package = {"packages/job_spa", "levels/narratives/h_watchdogs/stage_1/world/world"}
 	self.spa.player_style = "slaughterhouse"
 	self.spa.flashlights_on = true
 	
@@ -217,7 +224,6 @@ Hooks:PostHook( LevelsTweakData, "init", "SC_levels", function(self)
 	self.flat.ai_group_type = nypd
 	
 	self.glace.ai_group_type = nypd
-	self.glace.package = {"packages/narr_glace"}
 	self.glace.flashlights_on = true
 	
 	self.dah.ai_group_type = nypd
@@ -227,27 +233,22 @@ Hooks:PostHook( LevelsTweakData, "init", "SC_levels", function(self)
 	self.dinner.ai_group_type = nypd
 	self.dinner.package = {"packages/narr_dinner", "packages/murkywatermisc"}
 	self.dinner.player_style = "slaughterhouse"
+
+    self.trai.ai_group_type = nypd
+    self.trai.player_style = "railroad"
 	
-	self.ranc.ai_group_type = lapd
-	self.ranc.player_style = "fighterpilot"
-
-        --[[
-        self.trai.ai_group_type = lapd
-        self.trai.player_style = "fighterpilot"
-        --]]
-
+	self.corp.ai_group_type = nypd
+	
 	self.nmh.ai_group_type = nypd
 	self.nmh.ghost_bonus = nil
 	
 	--///LAPD LEVELS\\\--			
 	self.jolly.ai_group_type = lapd
-	self.jolly.package = {"packages/jolly", "levels/narratives/dentist/mia/stage2/world_sounds"}
 	self.jolly.player_style = "suit_sunny"
 	
 	self.pal.ai_group_type = lapd
 	
 	self.friend.ai_group_type = lapd
-	self.friend.package = {"levels/narratives/h_alex_must_die/stage_1/world_sounds", "packages/lvl_friend"}
 	self.friend.player_style = "suit_sunny"
 	
 	self.kenaz.ai_group_type = lapd
@@ -262,21 +263,29 @@ Hooks:PostHook( LevelsTweakData, "init", "SC_levels", function(self)
 	
 	
 	self.chas.ai_group_type = lapd
-	self.chas.package = {"packages/job_chas", "packages/miscassets", "levels/narratives/h_alex_must_die/stage_1/world_sounds"}
 	self.chas.player_style = "suit_sunny"
 	
 	self.sand.ai_group_type = lapd
-	self.sand.package = {"packages/job_sand", "levels/narratives/h_alex_must_die/stage_1/world_sounds"}
 	self.sand.player_style = "highinttech"
 
 	self.chca.ai_group_type = lapd
-	self.chca.package = {"packages/job_chca", "levels/narratives/h_alex_must_die/stage_1/world_sounds"}
 	self.chca.player_style = "continental"
 
 	self.pent.ai_group_type = lapd
-	self.pent.package = {"packages/job_pent", "levels/narratives/h_alex_must_die/stage_1/world_sounds", "levels/narratives/dentist/mia/stage2/world_sounds", "packages/miscassets", "levels/instances/unique/sah/sah_office/world/world"}
+	self.pent.package = {"packages/job_pent", "packages/miscassets", "levels/instances/unique/sah/sah_office/world/world"}
 	self.pent.player_style = "enforcer"
 	self.pent.max_bags = 17
+		
+	self.ranc.ai_group_type = lapd
+	self.ranc.player_style = "fighterpilot"
+	
+	--//GENSEC STUFF\\--
+	self.arm_cro.package = {"packages/narr_arm_cro", "packages/gensecmisc"}
+	self.arm_fac.package = {"packages/narr_arm_fac", "packages/gensecmisc"}
+	self.arm_hcm.package = {"packages/narr_arm_hcm", "packages/gensecmisc"}
+	self.arm_par.package = {"packages/narr_arm_par", "packages/gensecmisc"}
+	self.arm_und.package = {"packages/narr_arm_und", "packages/gensecmisc"}
+
 	
 	--///NEW OUTFITS\\\--
 	
@@ -290,7 +299,7 @@ Hooks:PostHook( LevelsTweakData, "init", "SC_levels", function(self)
 	
 	self.arena.player_style = "hiphop"
 
-	self.born.package = {"packages/narr_born_1", "packages/miscassets", "levels/narratives/e_welcome_to_the_jungle/stage_1/world_sounds"}	
+	self.born.package = {"packages/narr_born_1", "packages/miscassets"}	
 	self.born.player_style = "punk"
 	
 	
@@ -325,7 +334,7 @@ Hooks:PostHook( LevelsTweakData, "init", "SC_levels", function(self)
 	
 	self.welcome_to_the_jungle_1.player_style = "suit_sunny"
 	self.welcome_to_the_jungle_1_night.player_style = "suit_sunny"
-	--self.welcome_to_the_jungle_1_night.flashlights_on = true
+	self.welcome_to_the_jungle_1_night.flashlights_on = true
 	
 	
 	self.chew.player_style = "loud_suit"
@@ -400,18 +409,11 @@ Hooks:PostHook( LevelsTweakData, "init", "SC_levels", function(self)
 
 	self.mia2_new.teams = self.mia_2.teams
 
-	self.cane.package = {"packages/cane", "levels/narratives/e_welcome_to_the_jungle/stage_1/world_sounds"}
+	self.cane.package = {"packages/cane", "packages/miscassets"}
 	self.cane.player_style = "winter_suit"
 							
 	self.mus.package = {"packages/narr_mus"}
 	self.mus.player_style = "sneak_suit"
-	
-	--///GANGSTER VOICEOVER\\\--
-	self.short2_stage1.package = {"packages/job_short2_stage1", "levels/narratives/dentist/mia/stage2/world_sounds"}
-	self.chew.package = {"packages/lvl_chew", "levels/narratives/e_welcome_to_the_jungle/stage_1/world_sounds"}
-	self.nightclub.package = {"packages/vlad_nightclub", "levels/narratives/dentist/mia/stage2/world_sounds"}
-	self.peta.package = {"packages/narr_peta", "levels/narratives/h_alex_must_die/stage_1/world_sounds"}
-	self.peta2.package = {"packages/narr_peta2", "levels/narratives/h_alex_must_die/stage_1/world_sounds"}
 	
 	--//CHRISTMAS HEISTS\\--
 	
@@ -525,7 +527,7 @@ Hooks:PostHook( LevelsTweakData, "init", "SC_levels", function(self)
 	self.vit.ghost_bonus = 0.15
 	--The Dentist's Heists goes here--
 	self.big.ghost_bonus = 0.20
-	self.kenaz.ghost_bonus = 0.20
+	self.kenaz.ghost_bonus = 0.25
 	--Vlad's Heists goes here--
 	self.chca.ghost_bonus = 0.30
 	--The Butcher's Heists goes here--
@@ -533,6 +535,10 @@ Hooks:PostHook( LevelsTweakData, "init", "SC_levels", function(self)
 	self.crojob2.ghost_bonus = 0.20
 	--Gemma McShay's Heists goes here--
 	self.ranc.ghost_bonus = 0.20
+	self.trai.ghost_bonus = 0.25
+	--Blaine's Heists goes here--
+	self.corp.ghost_bonus = 0.20
+	self.deep.ghost_bonus = 0.20
 	
 	--///SKIRMISH shit\\\--
 	self.skm_cas.package = {"packages/dlcs/skm/job_skm", "packages/skm_sc_lapd"}
@@ -668,6 +674,26 @@ function LevelsTweakData:get_team_setup()
 
 		for id, team in pairs(teams) do
 			team.id = id
+		end
+	end
+
+	if managers.mutators:is_mutator_active(MutatorCG22) then
+		local team_ids = {}
+	
+		for team_id, team_data in pairs(teams) do
+			team_data.friends = team_data.friends or {}
+			team_data.friends.cg22 = true
+	
+			table.insert(team_ids, team_id)
+		end
+	
+		teams.cg22 = {
+			foes = {},
+			friends = {}
+		}
+	
+		for _, team_id in ipairs(team_ids) do
+			teams.cg22.friends[team_id] = true
 		end
 	end
 

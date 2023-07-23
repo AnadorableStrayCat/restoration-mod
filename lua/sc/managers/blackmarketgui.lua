@@ -435,7 +435,6 @@ function BlackMarketGui:populate_mods(data)
 	end
 end
 
-
 function BlackMarketGui:choose_weapon_mods_callback(data)
 	local dropable_mods = managers.blackmarket:get_dropable_mods_by_weapon_id(data.name, {
 		category = data.category,
@@ -446,13 +445,20 @@ function BlackMarketGui:choose_weapon_mods_callback(data)
 	local new_node_data = {}
 	local cosmetic_instances = managers.blackmarket:get_cosmetics_instances_by_weapon_id(data.name)
 	local all_cosmetics = managers.blackmarket:get_cosmetics_by_weapon_id(data.name)
+	local bmm = managers.blackmarket
+	local is_tam_f = bmm.is_weapon_skin_tam
+	local all_skins_td = tweak_data.blackmarket.weapon_skins
+	local is_steam = SystemInfo:distribution() == Idstring("STEAM")
+	local cosmetic_td = nil	
 
 	local weapon_id = data.name
 	local weapon_tweak = tweak_data.weapon
 	local has_type_override = weapon_tweak[ weapon_id ] and weapon_tweak[ weapon_id ].override_mod_type_name
 	
 	for id, data in pairs(all_cosmetics) do
-		if managers.blackmarket:is_weapon_skin_tam(id) then
+		cosmetic_td = all_skins_td[id]
+
+		if not is_steam and not cosmetic_td.is_a_color_skin and not cosmetic_td.is_a_unlockable or is_tam_f(bmm, id) then
 			all_cosmetics[id] = nil
 		end
 	end
@@ -658,8 +664,6 @@ function BlackMarketGui:choose_weapon_mods_callback(data)
 	self:_start_crafting_weapon(data, new_node_data)
 end
 
-
-
 function BlackMarketGui:_get_melee_weapon_stats(name)
 	local base_stats = {}
 	local mods_stats = {}
@@ -730,6 +734,34 @@ function BlackMarketGui:_get_melee_weapon_stats(name)
 			}
 		elseif stat.name == "charge_time" then
 			local base = stats_data.charge_time
+			local skill = managers.player:upgrade_value("player", "melee_swing_multiplier", 1) - 1
+			base_stats[stat.name] = {
+				value = base,
+				min_value = base,
+				max_value = base
+			}
+			skill_stats[stat.name] = {
+				min_value = -skill,
+				max_value = -skill,
+				value = -skill,
+				skill_in_effect = base > 0 and skill > 0
+			}
+		elseif stat.name == "attack_speed" then
+			local base = tweak_data.blackmarket.melee_weapons[name] and tweak_data.blackmarket.melee_weapons[name].repeat_expire_t and tweak_data.blackmarket.melee_weapons[name].repeat_expire_t / (tweak_data.blackmarket.melee_weapons[name].anim_speed_mult or 1)
+			local skill = managers.player:upgrade_value("player", "melee_swing_multiplier", 1) - 1
+			base_stats[stat.name] = {
+				value = base,
+				min_value = base,
+				max_value = base
+			}
+			skill_stats[stat.name] = {
+				min_value = -skill,
+				max_value = -skill,
+				value = -skill,
+				skill_in_effect = base > 0 and skill > 0
+			}
+		elseif stat.name == "impact_delay" then
+			local base = (tweak_data.blackmarket.melee_weapons[name] and tweak_data.blackmarket.melee_weapons[name].melee_damage_delay and tweak_data.blackmarket.melee_weapons[name].melee_damage_delay / (tweak_data.blackmarket.melee_weapons[name].anim_speed_mult or 1)) or 0
 			local skill = managers.player:upgrade_value("player", "melee_swing_multiplier", 1) - 1
 			base_stats[stat.name] = {
 				value = base,
@@ -813,7 +845,6 @@ function BlackMarketGui:_get_melee_weapon_stats(name)
 
 	return base_stats, mods_stats, skill_stats
 end
-
 
 function BlackMarketGui:_get_armor_stats(name)
 	local base_stats = {}
@@ -1012,6 +1043,14 @@ end
 -- Or just add the name = "deflection" to the table somewhere if you don't care much for a logical layout.
 
 function BlackMarketGui:_setup(is_start_page, component_data)
+	if self.rip_can_rename_page and self:rip_can_rename_page(component_data) then
+		for i, name in pairs(self.rip_page_names) do
+			if component_data[i] then
+				name = name == '' and managers.localization:to_upper_text('bm_menu_page', {page = tostring(i)}) or utf8.to_upper(name)
+				component_data[i].name_localized = name
+			end
+		end
+	end
 	self._in_setup = true
 
 	if alive(self._panel) then
@@ -2828,7 +2867,7 @@ function BlackMarketGui:_setup(is_start_page, component_data)
 			}
 			self._stats_texts = {}
 			self._rweapon_stats_panel = self._stats_panel:panel()
-			local scale_chart = 0.8 -- STAT CHART SCALING
+			local scale_chart = 0.75 -- STAT CHART SCALING
 			for i, stat in ipairs(self._stats_shown) do
 				panel = self._rweapon_stats_panel:panel({
 					name = "weapon_stats",
@@ -2883,13 +2922,11 @@ function BlackMarketGui:_setup(is_start_page, component_data)
 					name = "health"
 				},
 				{
-					name = "deflection",
-					append = "%"
+					name = "deflection"
 				},
 				{
 					name = "damage_shake",
-					inverted = true,
-					append = "%"
+					inverted = true
 				},
 				{
 					revert = true,
@@ -3006,8 +3043,20 @@ function BlackMarketGui:_setup(is_start_page, component_data)
 				},
 				{
 					inverse = true,
+					name = "attack_speed",
+					num_decimals = 2,
+					suffix = managers.localization:text("menu_seconds_suffix_short")
+				},
+				{
+					inverse = true,
 					name = "charge_time",
-					num_decimals = 1,
+					num_decimals = 2,
+					suffix = managers.localization:text("menu_seconds_suffix_short")
+				},
+				{
+					inverse = true,
+					name = "impact_delay",
+					num_decimals = 2,
 					suffix = managers.localization:text("menu_seconds_suffix_short")
 				},
 				{
@@ -3445,6 +3494,86 @@ function BlackMarketGui:_setup(is_start_page, component_data)
 	self:_round_everything()
 
 	self._in_setup = nil
+end
+
+function BlackMarketGui:show_btns(slot)
+	local data = slot._data
+	local btn_show_funcs = data.btn_show_funcs or {} 
+
+	for _, btn in pairs(self._btns) do
+		btn:hide()
+	end
+
+	local btns = {}
+	local btn_show_func_name, btn_show_func = nil
+
+	for i, btn in ipairs(data.buttons or data) do
+		btn_show_func_name = btn_show_funcs[btn]
+		btn_show_func = btn_show_func_name and callback(self, self, btn_show_func_name)
+
+		if self._btns[btn] and (not btn_show_func or btn_show_func(data)) then
+			self._btns[btn]:show()
+			table.insert(btns, self._btns[btn])
+		end
+	end
+
+	if not managers.menu:is_pc_controller() then
+		local back_btn = self._btns.back_btn
+
+		if back_btn then
+			back_btn:show()
+			table.insert(btns, back_btn)
+		end
+	end
+
+	self._button_count = #btns
+
+	table.sort(btns, function (x, y)
+		return x._data.prio < y._data.prio
+	end)
+
+	self._controllers_mapping = {}
+	self._controllers_pc_mapping = {}
+
+	for i, btn in ipairs(btns) do
+		if (not managers.menu:is_pc_controller() or managers.menu:is_steam_controller()) and not btn._data.no_btn then
+			btn:set_text_btn_prefix(btn._data.btn)
+		end
+
+		if btn._data.pc_btn then
+			self._controllers_pc_mapping[Idstring(btn._data.pc_btn):key()] = btn
+		end
+
+		self._controllers_mapping[btn._data.btn:key()] = btn
+
+		if btn._data.name == "bm_menu_btn_sell" or btn._data.name == "bm_menu_btn_buy_selected_weapon" then
+			data.btn_text_params = {
+				price = managers.experience:cash_string(data.price)
+			}
+		end
+
+		btn:set_text_params(data.btn_text_params)
+		btn:set_order(i)
+	end
+
+	local num_btns = #btns
+	local h = self._real_small_font_size or small_font_size
+	local info_box_panel = self._panel:child("info_box_panel")
+
+	if self._info_panel then
+		self._info_panel:set_size(info_box_panel:w() - 20, self._info_panel:num_children() / 2 * h)
+		self._info_panel:set_rightbottom(self._panel:w() - 10, self._btn_panel:top() - 10)
+	end
+
+	if managers.menu:is_pc_controller() and #btns > 0 then
+		slot:set_btn_text(btns[1]:btn_text())
+	else
+		slot:set_btn_text("")
+	end
+
+	self._visible_btns = btns
+
+	self:_update_borders()
 end
 
 
@@ -3940,9 +4069,9 @@ function BlackMarketGui:show_stats()
 					skill = skill / 100
 				end
 				local format_string = "%0." .. tostring(stat.num_decimals or 0) .. "f"
-				local equip_text = value and ((stat.name == "range" or stat.name == "charge_time") and format_round_3(value, stat.round_value)) or format_round(value, stat.round_value)
-				local base_text = base and ((stat.name == "range" or stat.name == "charge_time") and format_round_3(base, stat.round_value)) or format_round(base, stat.round_value)
-				local skill_text = skill_stats[stat.name].value and ((stat.name == "range" or stat.name == "charge_time") and format_round_3(skill_stats[stat.name].value, stat.round_value)) or format_round(skill_stats[stat.name].value, stat.round_value)
+				local equip_text = value and ((stat.name == "range" or stat.name == "charge_time" or stat.name == "attack_speed" or stat.name == "impact_delay") and format_round_3(value, stat.round_value)) or format_round(value, stat.round_value)
+				local base_text = base and ((stat.name == "range" or stat.name == "charge_time" or stat.name == "attack_speed" or stat.name == "impact_delay") and format_round_3(base, stat.round_value)) or format_round(base, stat.round_value)
+				local skill_text = skill_stats[stat.name].value and ((stat.name == "range" or stat.name == "charge_time" or stat.name == "attack_speed" or stat.name == "impact_delay") and format_round_3(skill_stats[stat.name].value, stat.round_value)) or format_round(skill_stats[stat.name].value, stat.round_value)
 				local base_min_text = base_min and format_round(base_min, true)
 				local base_max_text = base_max and format_round(base_max, true)
 				local value_min_text = value_min and format_round(value_min, true)
@@ -4020,8 +4149,8 @@ function BlackMarketGui:show_stats()
 					equip = equip / 100
 				end
 				local format_string = "%0." .. tostring(stat.num_decimals or 0) .. "f"
-				local equip_text = equip and ((stat.name == "range" or stat.name == "charge_time") and format_round_3(equip, stat.round_value)) or format_round(equip, stat.round_value)
-				local total_text = value and ((stat.name == "range" or stat.name == "charge_time") and format_round_3(value, stat.round_value)) or format_round(value, stat.round_value)
+				local equip_text = equip and ((stat.name == "range" or stat.name == "charge_time" or stat.name == "attack_speed" or stat.name == "impact_delay") and format_round_3(equip, stat.round_value)) or format_round(equip, stat.round_value)
+				local total_text = value and ((stat.name == "range" or stat.name == "charge_time" or stat.name == "attack_speed" or stat.name == "impact_delay") and format_round_3(value, stat.round_value)) or format_round(value, stat.round_value)
 				local equip_min_text = equip_min and format_round(equip_min, true)
 				local equip_max_text = equip_max and format_round(equip_max, true)
 				local total_min_text = value_min and format_round(value_min, true)
@@ -4153,9 +4282,16 @@ function BlackMarketGui:show_stats()
 		--Checks if the weapon stats with the mod (and no skills) change, and if they do, displays the difference.
 		--Would write a better solution, but I hate this file.
 		for name, data in pairs(unaltered_total_mods_stats) do
-			if unaltered_total_mods_stats[name].value ~= total_mods_stats[name].value then
-				mod_stats.chosen[name] = (total_base_stats[name].value + total_mods_stats[name].value)
-				- (unaltered_total_base_stats[name].value + unaltered_total_mods_stats[name].value)
+			if name == "damage" or name == "damage_min" then
+				if unaltered_total_mods_stats[name].value ~= total_mods_stats[name].value then
+					mod_stats.chosen[name] = (total_base_stats[name].value + (total_mods_stats[name].value + total_skill_stats[name].value))
+					- (unaltered_total_base_stats[name].value + (unaltered_total_mods_stats[name].value + unaltered_total_skill_stats[name].value))
+				end
+			else
+				if unaltered_total_mods_stats[name].value ~= total_mods_stats[name].value then
+					mod_stats.chosen[name] = (total_base_stats[name].value + total_mods_stats[name].value)
+					- (unaltered_total_base_stats[name].value + unaltered_total_mods_stats[name].value)
+				end
 			end
 		end
 		
@@ -4320,7 +4456,6 @@ function BlackMarketGui:show_stats()
 	end
 end
 
-
 function BlackMarketGui:update_info_text()
 	local slot_data = self._slot_data
 	local tab_data = self._tabs[self._selected]._data
@@ -4346,9 +4481,12 @@ function BlackMarketGui:update_info_text()
 	}
 	local ignore_lock = false
 	local desc_macros = {
+        BTN_FIRE = managers.localization:btn_macro("primary_attack", true),
+        BTN_AIM = restoration.Options:GetValue("OTHER/WeaponHandling/SeparateBowADS") and managers.localization:btn_macro("reload", true) or managers.localization:btn_macro("secondary_attack", true),
         BTN_GADGET = managers.localization:btn_macro("weapon_gadget", true),
         BTN_BIPOD = managers.localization:btn_macro("deploy_bipod", true)
     }
+
 
 	self._stats_text_modslist:set_text("")
 
@@ -4367,6 +4505,9 @@ function BlackMarketGui:update_info_text()
 		if slot_data.ignore_slot then
 			-- Nothing
 		elseif not slot_data.empty_slot then
+			local weapon_id = slot_data.name
+			local weapon_tweak = weapon_id and tweak_data.weapon[weapon_id]
+
 			updated_texts[1].text = slot_data.name_localized
 
 			if slot_data.name_color then
@@ -4377,12 +4518,91 @@ function BlackMarketGui:update_info_text()
 			end
 
 			local resource_color = {}
+			updated_texts[2].ignore_scale = true
 			updated_texts[2].resource_color = resource_color
 
-			if price > 0 then
-				updated_texts[2].text = "##" .. managers.localization:to_upper_text(slot_data.not_moddable and "st_menu_cost" or "st_menu_value") .. " " .. managers.experience:cash_string(price) .. "##"
+			local weapon_category = nil
+			local is_akimbo = false
+			local firemode_string = ""
+			local add_burst = nil
+			local lock_burst = nil
+			local lock_firemode = nil
+			if weapon_tweak then
+				if weapon_tweak.categories then
+					if weapon_tweak.categories[1] == "akimbo" then
+						is_akimbo = true
+					end
+					weapon_category = is_akimbo and weapon_tweak.categories[2] or weapon_tweak.categories[1]
+				end
+				if not lock_firemode and not lock_burst then
+					if weapon_tweak.FIRE_MODE == "single" then
+						firemode_string = managers.localization:to_upper_text("st_menu_firemode_semi")
+					elseif weapon_tweak.FIRE_MODE == "auto" then
+						firemode_string = managers.localization:to_upper_text("st_menu_firemode_auto")
+					end
+					if weapon_tweak.CAN_TOGGLE_FIREMODE then
+						if weapon_tweak.FIRE_MODE == "single" then
+							firemode_string = managers.localization:to_upper_text("st_menu_firemode_semi") .. "+" .. managers.localization:to_upper_text("st_menu_firemode_auto")
+						else
+							firemode_string = managers.localization:to_upper_text("st_menu_firemode_auto") .. "+" .. managers.localization:to_upper_text("st_menu_firemode_semi")
+						end
+					end
+					if weapon_tweak.BURST_FIRE then
+						local burst_type = nil --weapon_tweak.BURST_TYPE
+						if weapon_tweak.BURST_ONLY then
+							firemode_string = managers.localization:to_upper_text("st_menu_firemode_burst")
+						else
+							if is_akimbo then
+								firemode_string = managers.localization:to_upper_text("st_menu_firemode_burst") .. (firemode_string ~= "" and "+" .. firemode_string) or ""
+							elseif burst_type then
+								if burst_type == "fan" then
+									firemode_string = firemode_string and firemode_string .. "+" .. managers.localization:to_upper_text("st_menu_firemode_burst_fanning") or managers.localization:	to_upper_text("st_menu_firemode_burst_fanning")
+								elseif burst_type == "slam" then
+									firemode_string = firemode_string and firemode_string .. "+" .. managers.localization:to_upper_text("st_menu_firemode_burst_slamfire") or managers.localization:	to_upper_text("st_menu_firemode_burst_slamfire")
+								elseif burst_type == "rapid" then
+									firemode_string = firemode_string and firemode_string .. "+" .. managers.localization:to_upper_text("st_menu_firemode_burst_rapidfire") or managers.localization:	to_upper_text("st_menu_firemode_burst_rapidfire")
+								elseif burst_type == "autoburst" then
+									firemode_string = firemode_string and firemode_string .. "+" .. managers.localization:to_upper_text("st_menu_firemode_burst_autoburst") or managers.localization:	to_upper_text("st_menu_firemode_burst_autoburst")
+								end
+							else
+								firemode_string = firemode_string and firemode_string .. "+" .. managers.localization:to_upper_text("st_menu_firemode_burst") or managers.localization:to_upper_text("st_menu_firemode_burst")
+							end
+						end
+					end
+					if weapon_tweak.fire_mode_data and weapon_tweak.fire_mode_data.volley then
+						firemode_string = managers.localization:to_upper_text("st_menu_firemode_auto") .. "+" .. managers.localization:to_upper_text("st_menu_firemode_volley")
+					end
+					if weapon_tweak.FIRE_MODE == "volley" then
+						if weapon_tweak.CAN_TOGGLE_FIREMODE then
+							firemode_string = managers.localization:to_upper_text("st_menu_firemode_volley") .. "+" .. managers.localization:to_upper_text("st_menu_firemode_auto")
+						else
+							firemode_string = managers.localization:to_upper_text("st_menu_firemode_volley")
+						end
+					end
+				else
+					firemode_string = "temp"
+				end
+			end
 
-				table.insert(resource_color, slot_data.can_afford and tweak_data.screen_colors.text or tweak_data.screen_colors.important_1)
+			--[[
+			if price > 0 then
+				updated_texts[2].text = managers.localization:to_upper_text(slot_data.not_moddable and "st_menu_cost" or "st_menu_value") .. " ##" .. managers.experience:cash_string(price) .. "##"
+
+				table.insert(resource_color, slot_data.can_afford and tweak_data.screen_colors.skill_color or tweak_data.screen_colors.important_1)
+			end
+			--]]
+
+			if weapon_category then
+				if not managers.money:can_afford_weapon(slot_data.name) and price > 0 then
+					updated_texts[2].text = updated_texts[2].text .. managers.localization:to_upper_text(slot_data.not_moddable and "st_menu_cost" or "st_menu_value") .. " ##" .. managers.experience:cash_string(price) .. "##"
+					table.insert(resource_color, tweak_data.screen_colors.important_1)
+				else
+					updated_texts[2].text = updated_texts[2].text .. --((price > 0 and " | ") or "") .. 
+					managers.localization:to_upper_text("st_menu_skill_use") .." ##" .. ((is_akimbo and managers.localization:to_upper_text("st_wpn_akimbo")) or "") .. managers.localization:to_upper_text("st_wpn_" .. tostring(weapon_category)) .. "## | " ..
+					managers.localization:to_upper_text("st_menu_firemode") .. " ##" ..  firemode_string .. "##"
+
+					table.insert(resource_color, tweak_data.screen_colors.skill_color)
+				end
 			end
 
 			if not slot_data.not_moddable and not self._data.is_loadout then
@@ -4452,16 +4672,39 @@ function BlackMarketGui:update_info_text()
 				updated_texts[4].below_stats = true
 			end
 			
-			local weapon_id = slot_data.name
-			local weapon_tweak = weapon_id and tweak_data.weapon[weapon_id]
-
 			local selection_index = tweak_data:get_raw_value("weapon", self._slot_data.name, "use_data", "selection_index") or 1
 			local category = (selection_index == 1 and "secondaries") or (selection_index == 2 and "primaries") or "disabled"
 			if category == slot_data.category then
 
-				if weapon_tweak.has_description then
+				-- Ugly as fuck but this is the only way I can think of to fix the movement penalty text being excluded from description scaling is to just make it a part of descriptions and making a giant fuck off 'resource_color' table
+				local upgrade_tweak = weapon_tweak and tweak_data.upgrades.weapon_movement_penalty[weapon_tweak.categories[1]] or 1
+				local movement_penalty = weapon_tweak and weapon_tweak.weapon_movement_penalty or upgrade_tweak or 1
+				local crafted = managers.blackmarket:get_crafted_category_slot(slot_data.category, slot_data.slot)
+				local custom_stats = crafted and  managers.weapon_factory:get_custom_stats_from_weapon(crafted.factory_id, crafted.blueprint)
+				local sms = weapon_tweak and weapon_tweak.sms or 1
+				local stat_sms = nil
+				local stat_move = nil
+				local stat_attachment_desc = nil
+				if custom_stats then
+					for part_id, stats in pairs(custom_stats) do
+						if stats.sms then
+							sms = sms + (1 * (stats.sms - 1))
+							stat_sms = true
+						end
+						if stats.movement_speed_add then
+							movement_penalty = movement_penalty + stats.movement_speed_add
+							stat_move = true
+						end
+						if stats.alt_desc then
+							stat_attachment_desc = stats.alt_desc
+						end
+					end
+				end
+
+				if weapon_tweak and weapon_tweak.has_description then
 					local has_pc_desc = managers.menu:is_pc_controller() and managers.localization:exists(tweak_data.weapon[slot_data.name].desc_id .. "_pc")
-					local description = has_pc_desc and managers.localization:text(tweak_data.weapon[slot_data.name].desc_id .. "_pc", desc_macros) or managers.localization:text(tweak_data.weapon[slot_data.name].desc_id, desc_macros)
+					local desc_id = stat_attachment_desc or tweak_data.weapon[slot_data.name].desc_id
+					local description = has_pc_desc and managers.localization:text(desc_id .. "_pc", desc_macros) or managers.localization:text(desc_id, desc_macros)
 					for color_id in string.gmatch(description, "#%{(.-)%}#") do
 						table.insert(updated_texts[4].resource_color, tweak_data.screen_colors[color_id])
 					end
@@ -4483,29 +4726,12 @@ function BlackMarketGui:update_info_text()
 					updated_texts[4].below_stats = true
 				end			
 
-				-- Ugly as fuck but this is the only way I can think of to fix the movement penalty text being excluded from description scaling is to just make it a part of descriptions and making a giant fuck off 'resource_color' table
-				local upgrade_tweak = weapon_id and tweak_data.upgrades.weapon_movement_penalty[weapon_tweak.categories[1]] or 1
-				local movement_penalty = weapon_tweak.weapon_movement_penalty or upgrade_tweak or 1
-				local crafted = managers.blackmarket:get_crafted_category_slot(slot_data.category, slot_data.slot)
-				local custom_stats = crafted and  managers.weapon_factory:get_custom_stats_from_weapon(crafted.factory_id, crafted.blueprint)
-				local sms = weapon_tweak.sms or 1
-				local stat_sms = nil
-				if custom_stats then
-					for part_id, stats in pairs(custom_stats) do
-						if stats.sms then
-							sms = sms + (1 * (stats.sms - 1))
-							stat_sms = true
-						end
-					end
-				end
-
 				if movement_penalty < 1 then
 					local penalty_as_string = string.format("%d%%", math.round((1 - movement_penalty) * 100))
 					if slot_data.global_value and slot_data.global_value ~= "normal" or weapon_tweak.has_description then
 						updated_texts[4].text = updated_texts[4].text .. "\n##" .. managers.localization:text("bm_menu_weapon_movement_penalty_info") .. penalty_as_string .. managers.localization:text("bm_menu_weapon_movement_penalty_info_2") .. (sms < 1 and ";" or ".")  .. "##"
 					else
 						updated_texts[4].text = updated_texts[4].text .. "##" ..managers.localization:text("bm_menu_weapon_movement_penalty_info") .. penalty_as_string .. managers.localization:text("bm_menu_weapon_movement_penalty_info_2") .. (sms < 1 and ";" or ".") .. "##"
-						log(tostring( updated_texts[4].text ))
 					end
 					table.insert(updated_texts[4].resource_color, tweak_data.screen_colors.important_1)
 				elseif movement_penalty > 1 then
@@ -4522,13 +4748,13 @@ function BlackMarketGui:update_info_text()
 					local penalty_as_string = string.format("%d%%", math.round((1 - sms) * 100))
 					if slot_data.global_value and slot_data.global_value ~= "normal" or weapon_tweak.has_description then
 						if movement_penalty < 1 then
-							updated_texts[4].text = updated_texts[4].text .. " ##" .. managers.localization:text("bm_menu_sms_info_cont") .. "##"
+							updated_texts[4].text = updated_texts[4].text .. " ##" .. managers.localization:text(stat_move and "bm_menu_sms_info_cont_2" or "bm_menu_sms_info_cont") .. "##"
 						else
 							updated_texts[4].text = updated_texts[4].text .. "\n##" .. managers.localization:text("bm_menu_weapon_movement_penalty_info") .. penalty_as_string .. managers.localization:text(stat_sms and "bm_menu_stat_sms_info_2" or "bm_menu_sms_info_2") .. "##"
 						end
 					else
 						if movement_penalty < 1 then
-							updated_texts[4].text = updated_texts[4].text .. " ##" .. managers.localization:text("bm_menu_sms_info_cont") .. "##"
+							updated_texts[4].text = updated_texts[4].text .. " ##" .. managers.localization:text(stat_move and "bm_menu_sms_info_cont_2" or "bm_menu_sms_info_cont") .. "##"
 						else
 							updated_texts[4].text = updated_texts[4].text .. "##" .. managers.localization:text("bm_menu_weapon_movement_penalty_info") .. penalty_as_string .. managers.localization:text(stat_sms and "bm_menu_stat_sms_info_2" or "bm_menu_sms_info_2") .. "##"
 						end
@@ -4572,8 +4798,34 @@ function BlackMarketGui:update_info_text()
 	elseif identifier == self.identifiers.melee_weapon then
 		updated_texts[1].text = self._slot_data.name_localized
 
-		if tweak_data.blackmarket.melee_weapons[slot_data.name].info_id then
-			updated_texts[2].text = managers.localization:text(tweak_data.blackmarket.melee_weapons[slot_data.name].info_id)
+		updated_texts[2].resource_color = {}
+
+		local melee_tweak_data = tweak_data.blackmarket.melee_weapons[slot_data.name]
+		local has_info_id = melee_tweak_data.info_id
+		local swing_arc_h = melee_tweak_data.sphere_cast_radius_add_h
+		local swing_arc_charged_h = melee_tweak_data.sphere_cast_radius_add_charged_h
+		local swing_arc = melee_tweak_data.sphere_cast_radius_add_charged_h or melee_tweak_data.sphere_cast_radius_add_h or melee_tweak_data.sphere_cast_radius_add
+
+		if has_info_id or swing_arc then
+			local desc_text = has_info_id and managers.localization:text(tweak_data.blackmarket.melee_weapons[slot_data.name].info_id) or ""
+			if swing_arc then
+				if swing_arc >= 32 then
+					desc_text = desc_text .. ((has_info_id and "\n\n") or "") .. managers.localization:text((swing_arc_charged_h and "bm_melee_swing_arc_charge_h_4") or (swing_arc_h and "bm_melee_swing_arc_h_4") or "bm_melee_swing_arc_4")
+				elseif swing_arc >= 24 then
+					desc_text = desc_text .. ((has_info_id and "\n\n") or "") .. managers.localization:text((swing_arc_charged_h and "bm_melee_swing_arc_charge_h_3") or (swing_arc_h and "bm_melee_swing_arc_h_3") or "bm_melee_swing_arc_3")
+				elseif swing_arc >= 16 then
+					desc_text = desc_text .. ((has_info_id and "\n\n") or "") .. managers.localization:text((swing_arc_charged_h and "bm_melee_swing_arc_charge_h_2") or (swing_arc_h and "bm_melee_swing_arc_h_2") or "bm_melee_swing_arc_2")
+				elseif swing_arc >= 8 then
+					desc_text = desc_text .. ((has_info_id and "\n\n") or "") .. managers.localization:text((swing_arc_charged_h and "bm_melee_swing_arc_charge_h_1") or (swing_arc_h and "bm_melee_swing_arc_h_1") or "bm_melee_swing_arc_1")
+				end
+			end
+
+			for color_id in string.gmatch(desc_text, "#%{(.-)%}#") do
+				table.insert(updated_texts[2].resource_color, tweak_data.screen_colors[color_id])
+			end
+			desc_text = desc_text:gsub("#%{(.-)%}#", "##")
+
+			updated_texts[2].text = desc_text
 			updated_texts[2].below_stats = true
 		end
 
@@ -4588,13 +4840,17 @@ function BlackMarketGui:update_info_text()
 
 		-- [[
 		if slot_data.name == "weapon" and (bayonet_damage or (range and range > 0)) then
-			updated_texts[2].resource_color = tweak_data.screen_colors.skill_color
+			table.insert(updated_texts[2].resource_color, tweak_data.screen_colors[color_id])
+			table.insert(updated_texts[2].resource_color, tweak_data.screen_colors[color_id])
+			table.insert(updated_texts[2].resource_color, tweak_data.screen_colors[color_id])
+			table.insert(updated_texts[2].resource_color, tweak_data.screen_colors[color_id])
+			table.insert(updated_texts[2].resource_color, tweak_data.screen_colors[color_id])
 			updated_texts[2].text = (updated_texts[2].text ~= "" and updated_texts[2].text .. "\n\n" or "") .. 
-				"STATS FROM PRIMARY:" .. 
-				(damage_total and "\nADDITIONAL DAMAGE: ##+" .. tostring(damage_total) .. "##" or "") .. 
-				(bayonet_damage and skill_damage and skill_damage > 0 and "\n-BASE: ##" .. tostring(bayonet_damage) .. "##" or "") .. 
-				(bayonet_damage and skill_damage and skill_damage > 0 and "\n-SKILL: ##+" .. tostring(skill_damage) .. "##" or "") .. 
-				(range and range > 0 and "\nADDITIONAL RANGE: ##+" .. tostring(range) .. "m##" or "")
+				managers.localization:text("bm_menu_weapon_bayonet_header") .. 
+				(damage_total and managers.localization:text("bm_menu_weapon_bayonet_damage") .. tostring(damage_total) .. "##" or "") .. 
+				(bayonet_damage and skill_damage and skill_damage > 0 and managers.localization:text("bm_menu_weapon_bayonet_damage_base") .. tostring(bayonet_damage) .. "##" or "") .. 
+				(bayonet_damage and skill_damage and skill_damage > 0 and managers.localization:text("bm_menu_weapon_bayonet_damage_skill") .. tostring(skill_damage) .. "##" or "") .. 
+				(range and range > 0 and managers.localization:text("bm_menu_weapon_bayonet_range") .. tostring(range) .. "m##" or "")
 
 			updated_texts[2].below_stats = true
 		end
@@ -4631,18 +4887,15 @@ function BlackMarketGui:update_info_text()
 		end
 
 		updated_texts[4].resource_color = {}
-		local desc_text = managers.localization:text(tweak_data.blackmarket.melee_weapons[slot_data.name].desc_id)
-
 
 		if slot_data.global_value and slot_data.global_value ~= "normal" then
 			updated_texts[4].text = updated_texts[4].text .. "##" .. managers.localization:to_upper_text(tweak_data.lootdrop.global_values[slot_data.global_value].desc_id) .. "##"
-
 			table.insert(updated_texts[4].resource_color, tweak_data.lootdrop.global_values[slot_data.global_value].color)
 		end
 
 		updated_texts[4].below_stats = true
 	elseif identifier == self.identifiers.grenade then
-		local is_perk_throwable = tweak_data.blackmarket.projectiles[slot_data.name].base_cooldown
+		local is_perk_throwable = tweak_data.blackmarket.projectiles[slot_data.name].base_cooldown and not tweak_data.blackmarket.projectiles[slot_data.name].base_cooldown_no_perk
 		local amount = is_perk_throwable and 1 or math.round(tweak_data.blackmarket.projectiles[slot_data.name].max_amount *  managers.player:upgrade_value("player", "throwables_multiplier", 1))
 		updated_texts[1].text = self._slot_data.name_localized .. " (x" .. tostring(amount) .. ")"
 
@@ -4680,6 +4933,12 @@ function BlackMarketGui:update_info_text()
 
 		updated_texts[4].resource_color = {}
 		local desc_text = managers.localization:text(tweak_data.blackmarket.projectiles[slot_data.name].desc_id)
+
+		for color_id in string.gmatch(desc_text, "#%{(.-)%}#") do
+			table.insert(updated_texts[4].resource_color, tweak_data.screen_colors[color_id])
+		end
+		desc_text = desc_text:gsub("#%{(.-)%}#", "##")
+
 		updated_texts[4].text = desc_text .. "\n"
 
 		if slot_data.global_value and slot_data.global_value ~= "normal" then
@@ -4719,9 +4978,11 @@ function BlackMarketGui:update_info_text()
 			local amount = managers.player:body_armor_value("skill_max_health_store", upgrade_level, 1)
 			local multiplier = managers.player:upgrade_value("player", "armor_max_health_store_multiplier", 1)
 			local regen_speed = format_round((managers.player:body_armor_value("skill_kill_change_regenerate_speed", upgrade_level, 1) - 1) * 100)
-			local description = (managers.player:has_category_upgrade("player", "skill_kill_change_regenerate_speed") and 
-								managers.localization:to_upper_text("bm_menu_armor_max_health_store_1", {health_stored = format_round(amount * multiplier * tweak_data.gui.stats_present_multiplier)})) or 
+			local description = (managers.player:has_category_upgrade("player", "kill_change_regenerate_speed") and 
 								managers.localization:to_upper_text("bm_menu_armor_max_health_store_2", {health_stored = format_round(amount * multiplier * tweak_data.gui.stats_present_multiplier), regen_bonus = regen_speed})
+									or
+								managers.localization:to_upper_text("bm_menu_armor_max_health_store_1", {health_stored = format_round(amount * multiplier * tweak_data.gui.stats_present_multiplier)}))
+
 			for color_id in string.gmatch(description, "#%{(.-)%}#") do
 				table.insert(updated_texts[4].resource_color, tweak_data.screen_colors[color_id])
 			end
@@ -5131,15 +5392,39 @@ function BlackMarketGui:update_info_text()
 			end
 		end
 
+		local crafted = managers.blackmarket:get_crafted_category_slot(slot_data.category, slot_data.slot)
 		local part_id = slot_data.name
 		local part_data = part_id and tweak_data.weapon.factory.parts[part_id]
 		local perks = part_data and part_data.perks
 		local is_gadget = part_data and part_data.type == "gadget" or perks and table.contains(perks, "gadget")
+		local is_second_sight = part_data and part_data.sub_type == "second_sight" or perks and table.contains(perks, "second_sight")
 		local is_ammo = part_data and part_data.type == "ammo" or perks and table.contains(perks, "ammo")
 		local is_bayonet = part_data and part_data.type == "bayonet" or perks and table.contains(perks, "bayonet")
 		local is_bipod = part_data and part_data.type == "bipod" or perks and table.contains(perks, "bipod")
 		local has_desc = part_data and part_data.has_description == true
+		local has_move_speed = part_data and part_data.custom_stats and part_data.custom_stats.movement_speed_add
 		local has_sms = part_data and part_data.custom_stats and part_data.custom_stats.sms
+		local override_sms = has_sms and crafted and managers.weapon_factory:_part_data(slot_data.name, crafted.factory_id)
+		if override_sms then
+			if override_sms.custom_stats and override_sms.custom_stats.sms then
+				has_sms = override_sms.custom_stats.sms
+			elseif (not override_sms.custom_stats) or (override_sms.custom_stats and not override_sms.custom_stats.sms) then
+				has_sms = false
+			end
+		end
+		local has_second_sight = nil
+
+		if crafted then
+			for _, id in ipairs(managers.weapon_factory:get_assembled_blueprint(crafted.factory_id, crafted.blueprint)) do
+				local part = managers.weapon_factory:_part_data(id, crafted.factory_id)
+				if part and ( part.has_second_sight or part.sub_type == "second_sight" or ( part.perks and table.contains(part.perks, "second_sight") ) ) then
+					has_second_sight = not restoration.Options:GetValue("OTHER/WeaponHandling/SecondSightSprint") and true
+					break -- don't need to keep looking if one is present
+				end
+			end
+		end
+
+
 		local desc_color_info = part_data and part_data.desc_color_info
 		updated_texts[4].resource_color = {}
 
@@ -5157,9 +5442,12 @@ function BlackMarketGui:update_info_text()
 			table.insert(updated_texts[4].resource_color, tweak_data.screen_colors.text)
 		end
 
-		local crafted = managers.blackmarket:get_crafted_category_slot(prev_data.category, prev_data.slot)
+		crafted = managers.blackmarket:get_crafted_category_slot(prev_data.category, prev_data.slot)
 		if is_gadget or is_ammo or is_bayonet or is_bipod or has_desc then
 			local description = managers.weapon_factory:get_part_desc_by_part_id_from_weapon(part_id, crafted.factory_id, crafted.blueprint)
+			if is_gadget and has_second_sight and not is_second_sight then
+				description = description .. managers.localization:text("bm_wp_upg_fl_second_sight_warning")
+			end
 			for color_id in string.gmatch(description, "#%{(.-)%}#") do
 				table.insert(updated_texts[4].resource_color, tweak_data.screen_colors[color_id])
 			end
@@ -5172,9 +5460,19 @@ function BlackMarketGui:update_info_text()
 			end
 		end
 
+		if has_move_speed then
+			local penalty_as_string = string.format("%d%%", math.round((has_move_speed) * 100)):gsub("-", "")
+			if (slot_data.global_value and slot_data.global_value ~= "normal") or is_gadget or is_ammo or is_bayonet or is_bipod or has_desc or (perks and table.contains(perks, "bonus")) then
+				updated_texts[4].text = updated_texts[4].text .. "\n##" .. managers.localization:text("bm_menu_weapon_movement_penalty_info") .. penalty_as_string .. ".##"
+			else
+				updated_texts[4].text = updated_texts[4].text .. "##" .. managers.localization:text("bm_menu_weapon_movement_penalty_info") .. penalty_as_string .. ".##"
+			end
+			table.insert(updated_texts[4].resource_color, tweak_data.screen_colors.important_1)
+		end
+
 		if has_sms then
 			local penalty_as_string = string.format("%d%%", math.round((1 - has_sms) * 100))
-			if (slot_data.global_value and slot_data.global_value ~= "normal") or is_gadget or is_ammo or is_bayonet or is_bipod or has_desc or (perks and table.contains(perks, "bonus")) then
+			if (slot_data.global_value and slot_data.global_value ~= "normal") or is_gadget or is_ammo or is_bayonet or is_bipod or has_desc or has_move_speed or (perks and table.contains(perks, "bonus")) then
 				updated_texts[4].text = updated_texts[4].text .. "\n##" .. managers.localization:text("bm_menu_weapon_movement_penalty_info") .. penalty_as_string .. managers.localization:text(stat_sms and "bm_menu_stat_sms_info_2" or "bm_menu_sms_info_2") .. "##"
 			else
 				updated_texts[4].text = updated_texts[4].text .. "##" .. managers.localization:text("bm_menu_weapon_movement_penalty_info") .. penalty_as_string .. managers.localization:text(stat_sms and "bm_menu_stat_sms_info_2" or "bm_menu_sms_info_2") .. "##"
@@ -5566,10 +5864,42 @@ function BlackMarketGui:update_info_text()
 			updated_texts[3].text = updated_texts[3].text .. "\n"
 		end
 
-		updated_texts[4].text = managers.localization:text(tweak_data.blackmarket.deployables[slot_data.name].desc_id, {
+		local deployable_id = slot_data.name
+		local deployable_uses = nil
+		if deployable_id == "doctor_bag" then
+			deployable_uses = tweak_data.upgrades.doctor_bag_base + (managers.player:equiptment_upgrade_value(deployable_id, "amount_increase") or 0)
+		elseif deployable_id == "ammo_bag" then
+			deployable_uses = tweak_data.upgrades.ammo_bag_base + (managers.player:equiptment_upgrade_value(deployable_id, "ammo_increase") or 0)
+		elseif deployable_id == "ecm_jammer" then
+			local mult_1 = managers.player:has_category_upgrade(deployable_id, "duration_multiplier") and managers.player:equiptment_upgrade_value(deployable_id, "duration_multiplier") or 1
+			local mult_2 = managers.player:has_category_upgrade(deployable_id, "duration_multiplier_2") and managers.player:equiptment_upgrade_value(deployable_id, "duration_multiplier_2") or 1
+			deployable_uses = tweak_data.upgrades.ecm_jammer_base_battery_life * mult_1 * mult_2
+		elseif deployable_id == "sentry_gun_silent" then
+			deployable_id = "sentry_gun"
+		end
+
+		if deployable_id == "sentry_gun" then
+			local ammo_cost = { --SentryGunBase isn't loaded outside of gameplay so I gotta dupe the cost table here, maybe I'll move it to tweak_data
+				0.4,
+				0.35,
+				0.3
+			}
+			local cost_reduction = managers.player:has_category_upgrade(deployable_id, "cost_reduction") and managers.player:equiptment_upgrade_value(deployable_id, "cost_reduction") or 1
+			deployable_uses = ammo_cost[cost_reduction] * 100 .. "%"
+		end
+
+		updated_texts[4].resource_color = {}
+		local description = managers.localization:text(tweak_data.blackmarket.deployables[slot_data.name].desc_id, {
 			BTN_INTERACT = managers.localization:btn_macro("interact", true),
-			BTN_USE_ITEM = managers.localization:btn_macro("use_item", true)
+			BTN_USE_ITEM = managers.localization:btn_macro("use_item", true),
+			deployable_uses = deployable_uses
 		})
+		for color_id in string.gmatch(description, "#%{(.-)%}#") do
+			table.insert(updated_texts[4].resource_color, tweak_data.screen_colors[color_id])
+		end
+		description = description:gsub("#%{(.-)%}#", "##")
+
+		updated_texts[4].text = description
 	elseif identifier == self.identifiers.character then
 		updated_texts[1].text = slot_data.name_localized
 
@@ -5628,13 +5958,14 @@ function BlackMarketGui:update_info_text()
 				local color_index_string = managers.localization:to_upper_text("bm_menu_weapon_color_index", {
 					variation = managers.localization:text(tweak_data.blackmarket:get_weapon_color_index_string(slot_data.cosmetic_color_index))
 				})
+				local quality_id = tweak_data.economy.qualities[cosmetic_quality] and tweak_data.economy.qualities[cosmetic_quality].name_id and cosmetic_quality or "mint"
 				local quality_string = managers.localization:to_upper_text("bm_menu_weapon_color_quality", {
-					quality = managers.localization:text(tweak_data.economy.qualities[cosmetic_quality].name_id)
+					quality = managers.localization:text(tweak_data.economy.qualities[quality_id].name_id)
 				})
 				updated_texts[4].text = updated_texts[4].text .. name_string .. "\n" .. color_index_string .. "\n" .. quality_string
 
 				table.insert(updated_texts[4].resource_color, tweak_data.screen_colors.text)
-				table.insert(updated_texts[4].resource_color, tweak_data.economy.qualities[cosmetic_quality].color or tweak_data.screen_colors.text)
+				table.insert(updated_texts[4].resource_color, tweak_data.economy.qualities[quality_id].color or tweak_data.screen_colors.text)
 			else
 				updated_texts[4].text = updated_texts[4].text .. managers.localization:text("bm_menu_customizable_weapon_color_desc")
 			end
@@ -5838,13 +6169,13 @@ function BlackMarketGui:update_info_text()
 	end
 
 	local below_y = nil
-	local resmod_scale = 0.95
 	
 	for i = 2, #self._info_texts do
 		local info_text = self._info_texts[i]
+		local resmod_scale = 0.95
 
 		info_text:set_font_size(small_font_size * resmod_scale)
-		info_text:set_w(self._info_texts_panel:w())
+		info_text:set_w((updated_texts[i].ignore_scale and 10000) or self._info_texts_panel:w())
 
 		_, _, _, th = info_text:text_rect()
 
@@ -5928,7 +6259,6 @@ function BlackMarketGui:update_info_text()
 		self._rename_caret:set_world_position(x + w, y)
 	end
 end
-
 
 
 function BlackMarketGui:open_weapon_buy_menu(data, check_allowed_item_func)
@@ -6108,6 +6438,252 @@ function BlackMarketGui:open_weapon_buy_menu(data, check_allowed_item_func)
 	})
 end
 
+
+local function make_cosmetic_data(data, cosmetic_id, unlocked, quality, bonus, equipped)
+	local crafted = managers.blackmarket:get_crafted_category(data.category)[data.prev_node_data and data.prev_node_data.slot]
+	local my_cd = tweak_data.blackmarket.weapon_skins[cosmetic_id]
+	local new_data = {
+		name = cosmetic_id,
+		name_localized = my_cd and my_cd.name_id and managers.localization:text(my_cd.name_id) or managers.localization:text("bm_menu_no_mod"),
+		desc_id = my_cd and my_cd.desc_id,
+		lock_text_id = my_cd and my_cd.lock_id,
+		category = data.category or data.prev_node_data and data.prev_node_data.category,
+		default_blueprint = my_cd and my_cd.default_blueprint,
+		locked_cosmetics = my_cd and my_cd.locked
+	}
+	local bitmap_texture, bg_texture = managers.blackmarket:get_weapon_icon_path(data.prev_node_data.name, {
+		id = cosmetic_id
+	})
+	new_data.bitmap_texture = bitmap_texture
+	new_data.bg_texture = bg_texture
+
+	if not unlocked then
+		new_data.bitmap_locked_color = Color.white
+		new_data.bitmap_locked_blend_mode = "normal"
+		new_data.bitmap_locked_alpha = 0.6
+		new_data.bg_alpha = 0.4
+	end
+
+	new_data.slot = data.slot or data.prev_node_data and data.prev_node_data.slot
+	new_data.global_value = my_cd and my_cd.global_value or "normal"
+	new_data.akimbo_gui_data = tweak_data.weapon[crafted.weapon_id] and tweak_data.weapon[crafted.weapon_id].akimbo_gui_data
+	new_data.cosmetic_id = cosmetic_id
+	new_data.cosmetic_quality = quality
+	new_data.cosmetic_rarity = my_cd and my_cd.rarity or "common"
+	new_data.cosmetic_bonus = bonus
+	new_data.unlocked = unlocked
+	new_data.equipped = equipped
+	new_data.stream = true
+	new_data.lock_texture = not new_data.unlocked
+
+	if new_data.default_blueprint then
+		new_data.comparision_data = managers.blackmarket:get_weapon_stats(new_data.category, new_data.slot, new_data.default_blueprint)
+	end
+
+	if new_data.unlocked then
+		if managers.blackmarket:last_previewed_cosmetic() == cosmetic_id then
+			table.insert(new_data, "wcc_cancel_preview")
+		else
+			table.insert(new_data, "wcc_preview")
+		end
+	end
+
+	if new_data.equipped then
+		table.insert(new_data, "wcc_remove")
+	end
+
+	if new_data.unlocked then
+		if not crafted.previewing and not new_data.equipped then
+			table.insert(new_data, "wcc_equip")
+		end
+
+		if managers.blackmarket:is_previewing_any_mod() then
+			table.insert(new_data, "wm_clear_mod_preview")
+		end
+	else
+		if managers.blackmarket:last_previewed_cosmetic() == cosmetic_id then
+			table.insert(new_data, "wcc_cancel_preview")
+		else
+			table.insert(new_data, "wcc_preview")
+		end
+
+		if not crafted.previewing and not my_cd.is_a_unlockable and managers.menu:is_pc_controller() then
+			table.insert(new_data, "wcc_market")
+		end
+
+		if managers.blackmarket:is_previewing_any_mod() then
+			table.insert(new_data, "wm_clear_mod_preview")
+		end
+
+		local lock_icon = nil
+
+		if managers.dlc:is_content_achievement_locked("weapon_skins", new_data.name) or managers.dlc:is_content_achievement_milestone_locked("weapon_skins", new_data.name) then
+			lock_icon = "guis/textures/pd2/lock_achievement"
+		end
+
+		new_data.mini_icons = new_data.mini_icons or {}
+
+		table.insert(new_data.mini_icons, {
+			stream = true,
+			layer = 2,
+			h = 30,
+			w = 30,
+			blend_mode = "normal",
+			bottom = 1,
+			right = 1,
+			texture = lock_icon or my_cd.is_a_unlockable and "guis/textures/pd2/skilltree/padlock" or "guis/textures/pd2/lock_dlc",
+			color = tweak_data.screen_colors.important_1
+		})
+	end
+
+	return new_data
+end
+
+function BlackMarketGui:populate_weapon_cosmetics(data)
+	local crafted = managers.blackmarket:get_crafted_category(data.category)[data.prev_node_data and data.prev_node_data.slot]
+	local cosmetics_data = tweak_data.blackmarket.weapon_skins
+	local my_cd, new_data, bitmap_texture, bg_texture = nil
+	local inventory_tradable = managers.blackmarket:get_inventory_tradable()
+	local cosmetics_instances = data.on_create_data.instances or {}
+	local all_cosmetics = data.on_create_data.cosmetics or {}
+	local cosmetic_data, cosmetic_id = nil
+	local index_i = 1
+	cosmetic_id = tweak_data.blackmarket.weapon_color_default
+	cosmetic_data = cosmetics_data[cosmetic_id]
+	local unlocked = true
+	local equipped = false
+	local quality = "good"
+	local color_index = 1
+	local pattern_scale = tweak_data.blackmarket.weapon_color_pattern_scale_default
+	local color_texture = nil
+	local equipped_cosmetic_id = crafted and crafted.cosmetics and crafted.cosmetics.id
+	local equipped_tweak = cosmetics_data[equipped_cosmetic_id]
+
+	if equipped_tweak and equipped_tweak.is_a_color_skin then
+		cosmetic_id = equipped_cosmetic_id
+		cosmetic_data = equipped_tweak
+		quality = crafted.cosmetics.quality
+		color_index = crafted.cosmetics.color_index
+		pattern_scale = crafted.cosmetics.pattern_scale
+		equipped = true
+		local dlc = cosmetic_data.dlc or managers.dlc:global_value_to_dlc(cosmetic_data.global_value)
+		local global_value = cosmetic_data.global_value or managers.dlc:dlc_to_global_value(dlc)
+		local dlc_unlocked = not dlc or managers.dlc:is_dlc_unlocked(dlc)
+		local have_color = managers.blackmarket:has_item(global_value, "weapon_skins", equipped_cosmetic_id)
+		unlocked = dlc_unlocked and have_color
+		local guis_catalog = "guis/"
+		local bundle_folder = equipped_tweak.texture_bundle_folder
+
+		if bundle_folder then
+			guis_catalog = guis_catalog .. "dlcs/" .. tostring(bundle_folder) .. "/"
+		end
+
+		color_texture = guis_catalog .. "textures/pd2/blackmarket/icons/weapon_color/" .. cosmetic_id
+	end
+
+	local global_value = cosmetic_data.global_value or "normal"
+	new_data = make_cosmetic_data(data, cosmetic_id, unlocked, quality, nil, equipped)
+	new_data.akimbo_gui_data = nil
+	new_data.name_localized = managers.localization:text("bm_menu_customizable_weapon_color")
+	new_data.is_a_color_skin = true
+	new_data.bitmap_texture = color_texture
+	new_data.cosmetic_color_index = color_index
+	new_data.cosmetic_pattern_scale = pattern_scale
+	new_data.mid_text_no_change_alpha = true
+	new_data.mid_text = {
+		selected_text = new_data.name_localized,
+		selected_color = tweak_data.screen_colors.text
+	}
+	new_data.mid_text.noselected_text = new_data.mid_text.selected_text
+	new_data.mid_text.noselected_color = tweak_data.screen_colors.text
+	new_data.mid_text.font = small_font
+	new_data.mid_text.font_size = small_font_size
+	new_data.mid_text.vertical = "center"
+
+	if equipped then
+		table.insert(new_data, "wcs_customize_color")
+	end
+
+	local equip_index = table.get_vector_index(new_data, "wcc_equip")
+
+	if equip_index then
+		new_data[equip_index] = "wcs_equip"
+	end
+
+	data[index_i] = new_data
+	index_i = index_i + 1
+
+	for _, instance_id in ipairs(cosmetics_instances) do
+		cosmetic_id = inventory_tradable[instance_id].entry
+		my_cd = cosmetics_data[cosmetic_id]
+		local quality = inventory_tradable[instance_id].quality
+		local bonus = inventory_tradable[instance_id].bonus
+		local equipped = crafted and crafted.cosmetics and crafted.cosmetics.instance_id == instance_id
+		new_data = make_cosmetic_data(data, cosmetic_id, true, quality, bonus, equipped)
+		new_data.name = instance_id
+
+		if new_data.cosmetic_bonus then
+			local bonuses = tweak_data.economy:get_bonus_icons(my_cd.bonus)
+			local x = 0
+
+			for _, texture_path in ipairs(bonuses) do
+				new_data.mini_icons = new_data.mini_icons or {}
+
+				table.insert(new_data.mini_icons, {
+					name = "has_bonus",
+					h = 16,
+					layer = 1,
+					w = 16,
+					stream = false,
+					bottom = 0,
+					texture = texture_path,
+					right = x
+				})
+
+				x = x + 17
+			end
+		end
+
+		data[index_i] = new_data
+		index_i = index_i + 1
+	end
+
+	for _, cosm_data in ipairs(all_cosmetics) do
+		cosmetic_id = cosm_data.id
+		cosmetic_data = cosm_data.data
+		my_cd = cosmetics_data[cosmetic_id]
+
+		if not my_cd.is_template then
+			local global_value = my_cd and my_cd.global_value or "normal"
+			local unlocked = managers.blackmarket:get_item_amount(global_value, "weapon_skins", cosmetic_id, true) > 0
+			local equipped = crafted and crafted.cosmetics and crafted.cosmetics.instance_id == cosmetic_id
+			new_data = make_cosmetic_data(data, cosmetic_id, unlocked, "mint", nil, equipped)
+			data[index_i] = new_data
+			index_i = index_i + 1
+		end
+	end
+
+	local total_cosmetics = #cosmetics_instances + #all_cosmetics
+	total_cosmetics = total_cosmetics + 1
+	local new_data = nil
+	local max_items = self:calc_max_items(total_cosmetics, data.override_slots or WEAPON_MODS_SLOTS)
+
+	for i = 1, max_items do
+		if not data[i] then
+			new_data = {
+				name = "empty",
+				name_localized = "",
+				category = data.category,
+				slot = i,
+				unlocked = true,
+				equipped = false
+			}
+			data[i] = new_data
+		end
+	end
+end
+
+
 -- Mod Shop Stuff
 Hooks:RegisterHook("BlackMarketGUIOnPopulateBuyMasks")
 Hooks:RegisterHook("BlackMarketGUIOnPopulateBuyMasksActionList")
@@ -6261,7 +6837,6 @@ function BlackMarketGui.populate_buy_mask(self, data)
 		end
 
 	end
-
 end
 
 local populate_choose_mask_mod1 = BlackMarketGui.populate_choose_mask_mod
@@ -6420,7 +6995,6 @@ populate_choose_mask_mod1(self, data)
 		end
 
 	end
-
 end
 
 BlackMarketGui.modshop_purchase_mask_callback = function(self, data)

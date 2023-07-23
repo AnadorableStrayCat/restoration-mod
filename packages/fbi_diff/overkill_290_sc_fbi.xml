@@ -80,13 +80,6 @@
 	<!--opscore-->
 	<unit_mat			path="units/pd2_mod_lapd/characters/ene_acc_opscore/ene_acc_opscore" />
 	<cooked_physics		path="units/pd2_mod_lapd/characters/ene_acc_opscore/ene_acc_opscore"/>
-
-	<!--M416 -->
-	<texture			path="units/pd2_mod_lapd/weapons/wpn_npc_m416/m416_atlas_df" />		
-	<texture			path="units/pd2_mod_lapd/weapons/wpn_npc_m416/m416_atlas_nm" />		
-	
-	<unit_mat			path="units/pd2_mod_lapd/weapons/wpn_npc_m416/wpn_npc_m416" />
-	<cooked_physics		path="units/pd2_mod_lapd/weapons/wpn_npc_m416/wpn_npc_m416"/>
 	
 	<!-- city tier -->	
 	<!--City swat 1-->
@@ -191,7 +184,19 @@
 	<object				path="units/payday2/characters/ene_tazer_1_sc/ene_tazer_1_sc" />
 	<material_config	path="units/payday2/characters/ene_tazer_1_sc/ene_tazer_1_sc" />	
 	<material_config	path="units/payday2/characters/ene_tazer_1_sc/ene_tazer_1_sc_contour" />				
-	<cooked_physics		path="units/payday2/characters/ene_tazer_1_sc/ene_tazer_1_sc" />	
+	<cooked_physics		path="units/payday2/characters/ene_tazer_1_sc/ene_tazer_1_sc" />
+
+	<!-- OMNIA taster (for Spring squad) -->
+	<object				path="units/pd2_mod_omnia/characters/ene_omnia_taser/ene_omnia_taser" force="false"/>
+	<cooked_physics		path="units/pd2_mod_omnia/characters/ene_omnia_taser/ene_omnia_taser" force="false"/>
+	<model				path="units/pd2_mod_omnia/characters/ene_omnia_taser/ene_omnia_taser" force="false"/>
+	<unit				path="units/pd2_mod_omnia/characters/ene_omnia_taser/ene_omnia_taser" force="false" load="true"/>
+	<material_config	path="units/pd2_mod_omnia/characters/ene_omnia_taser/ene_omnia_taser" force="false"/>
+	<material_config	path="units/pd2_mod_omnia/characters/ene_omnia_taser/ene_omnia_taser_contour" force="false"/>
+	<unit				path="units/pd2_mod_omnia/characters/ene_omnia_taser/ene_omnia_taser_husk" force="false" load="true"/> 
+	<df_nm				path="units/pd2_mod_omnia/characters/shared_textures/taser_body"/>
+	<texture			path="units/pd2_mod_omnia/characters/shared_textures/eyes_il"/>
+	<df_nm				path="units/pd2_mod_omnia/characters/shared_textures/heads_atlas_omnia"/>
 
 	<!--Grenadier-->
 	<object				path="units/payday2/characters/ene_grenadier_1/ene_grenadier_1" force="false"/>
@@ -263,12 +268,18 @@
 	<object				path="units/pd2_dlc_vip/characters/ene_titan_shotgun/ene_titan_shotgun" force="false"/>
 	<cooked_physics		path="units/pd2_dlc_vip/characters/ene_titan_shotgun/ene_titan_shotgun" force="false"/>
 	<model				path="units/pd2_dlc_vip/characters/ene_titan_shotgun/ene_titan_shotgun" force="false"/>
+	<material_config	path="units/pd2_dlc_vip/characters/ene_titan_shotgun/ene_titan_shotgun" force="false"/>
+	<material_config	path="units/pd2_dlc_vip/characters/ene_titan_shotgun/ene_titan_shotgun_contour" force="false"/>
+	
+	<texture			path="units/pd2_dlc_vip/characters/shared_textures/titan_swat_glass_blue_df" load="true" force="false"/>
 
 
 	<!--Titanshield-->	
 	<unit				path="units/pd2_dlc_vip/characters/ene_phalanx_1_assault/ene_phalanx_1_assault" force="false" load="true"/>
 	<unit				path="units/pd2_dlc_vip/characters/ene_phalanx_1_assault/ene_phalanx_1_assault_husk" force="false" load="true"/>
 	<object				path="units/pd2_dlc_vip/characters/ene_phalanx_1_assault/ene_phalanx_1_assault" force="false" />
+	<material_config	path="units/pd2_dlc_vip/characters/ene_phalanx_1_assault/ene_phalanx_1_assault" force="false"/>
+	<material_config	path="units/pd2_dlc_vip/characters/ene_phalanx_1_assault/ene_phalanx_1_assault_contour" force="false"/>
 	<model				path="units/pd2_dlc_vip/characters/ene_phalanx_1_assault/ene_phalanx_1_assault" force="false" />
 
 
@@ -294,6 +305,7 @@
 	<material_config	path="units/pd2_dlc_vip/characters/ene_titan_rifle/ene_titan_rifle" force="false"/>
 	<material_config	path="units/pd2_dlc_vip/characters/ene_titan_rifle/ene_titan_rifle_contour" force="false"/>
 	
+	<texture			path="units/pd2_dlc_vip/characters/shared_textures/titan_swat_glass_red_df" load="true" force="false"/>	
 	<texture			path="units/pd2_dlc_vip/characters/shared_textures/heads_dozer_df" force="false"/>
 	<texture			path="units/pd2_dlc_vip/characters/shared_textures/heads_dozer_il" load="true" force="false"/>
 	

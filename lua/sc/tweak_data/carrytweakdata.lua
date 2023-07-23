@@ -77,7 +77,20 @@ Hooks:PostHook(CarryTweakData, "init", "res_carry", function(self, tweak_data)
 			SO_category = "enemies"
 		}
 	}	
-	
+	--made Train Heist ammo explode on huge impact again :')
+	--Disabled due to stack overflow crash
+	--[[
+	self.ammo = {
+		type = "explosives",
+		name_id = "hud_carry_ammo",
+		bag_value = "shells",
+		unit = "units/pd2_dlc1/pickups/gen_pku_explosivesbag/gen_pku_explosivesbag",
+		visual_unit_name = "units/payday2/characters/npc_acc_explosives_bag_1/npc_acc_explosives_bag_1",
+		AI_carry = {
+			SO_category = "enemies"
+		}
+	}
+	--]]
 	--Overriding so cops won't try to snatch up the goats
 	self.goat.AI_carry = nil
 
@@ -86,4 +99,8 @@ Hooks:PostHook(CarryTweakData, "init", "res_carry", function(self, tweak_data)
 	self.nail_caustic_soda.AI_carry = nil
 	self.nail_hydrogen_chloride.AI_carry = nil
 	self.nail_euphadrine_pills.AI_carry = nil
+	
+	--CG22 event stuff
+	self.types.cg22_light = deep_clone(self.types.light)	
+	self.types.cg22_heavy = deep_clone(self.types.heavy)		
 end)

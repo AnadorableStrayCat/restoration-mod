@@ -42,7 +42,6 @@ function restoration:Init()
 	    --Winters
 		arena = restoration.captain_types.winter, --Alesso
 		welcome_to_the_jungle_1 = restoration.captain_types.winter, --Big Oil Day 1
-		welcome_to_the_jungle_1_night = restoration.captain_types.winter, --Big Oil Day 1 Night
 		stage_1 = restoration.captain_types.winter, --Big Oil Day 1 EDIT
 		welcome_to_the_jungle_2 = restoration.captain_types.winter, --Big Oil Day 2
 		stage_2 = restoration.captain_types.winter, --Big Oil Day 2 EDIT
@@ -74,6 +73,8 @@ function restoration:Init()
 		constantine_policestation_lvl = restoration.captain_types.winter, --Constantine Scores (precinct raid)
 		battlearena = restoration.captain_types.winter, --Five-G
 		tonisl1 = restoration.captain_types.winter, --Grand Harvest
+		constantine_penthouse_lvl = restoration.captain_types.winter, --Penthouse Crasher (Constantine Scores)
+		tonmapjam22l = restoration.captain_types.winter, --Hard Cash
 
 		--Summers
 		alex_2 = restoration.captain_types.summer, --Rats Day 2
@@ -84,6 +85,7 @@ function restoration:Init()
 		jolly = restoration.captain_types.summer, --aftershock
 		rvd1 = restoration.captain_types.summer, --highland mortuary 
 		watchdogs_2_day = restoration.captain_types.summer, --Watchdogs Day 2 Daytime
+		trai = restoration.captain_types.summer, --Lost In Transit
 		jolly_CD = restoration.captain_types.summer, --jolly crackdown edit
 		--Custom Heists--	
 		alex_2_res = restoration.captain_types.summer, --Rats Day 2 edit
@@ -94,6 +96,8 @@ function restoration:Init()
 		firestarter_3_res = restoration.captain_types.summer, --firestarter day 3 res edit version
 		bag_sim_2 = restoration.captain_types.summer, --Bag Simulator 2
 		RogueCompany = restoration.captain_types.summer, --Rogue Company
+		Security_Avenue = restoration.captain_types.summer, --Gensec HQ Raid day 1
+		constantine_resort_lvl = restoration.captain_types.summer, --Scarlett Resort (Constantine Scores)
 
 		--Spring
 		xmn_hox2 = restoration.captain_types.spring, --Hoxout Day 2, christmas
@@ -119,7 +123,10 @@ function restoration:Init()
 		mansion_stage1 = restoration.captain_types.spring, --Elmsworth Mansion
 		constantine_gunrunnerclubhouse_lvl = restoration.captain_types.spring, --Constantine Scores (gunrunner)
 		sh_raiders = restoration.captain_types.spring, --Safehouse Raiders
+		bluewave = restoration.captain_types.spring,  --res map bluewave
 		dwn1 = restoration.captain_types.spring, --Deep Inside
+		constantine_murkyairport_lvl = restoration.captain_types.spring, --Murky Airport (Constantine Scores)
+		jambank = restoration.captain_types.spring, --Botched Bank
 
 		--Autumn
 		alex_1 = restoration.captain_types.autumn, --Rats Day 1
@@ -135,13 +142,13 @@ function restoration:Init()
 		ukrainian_job = restoration.captain_types.autumn, --Ukrainian Job
 		man = restoration.captain_types.autumn, --undercover--
 		watchdogs_2 = restoration.captain_types.autumn, --Watchdogs Day 2 Night
+		watchdogs_1_night = restoration.captain_types.autumn, --Watchdogs Day 1 Night
 		--Custom Heists--
 		alex_1_res = restoration.captain_types.autumn, --Rats Day 1 edit
 		lvl_fourmorestores = restoration.captain_types.autumn, --four more stores
 		ukrainian_job_res = restoration.captain_types.autumn, --Ukrainian Job res edit version
 		hntn = restoration.captain_types.autumn, --harvest and trustee north
 		wetwork = restoration.captain_types.autumn,  --res map package wetworks
-		bluewave = restoration.captain_types.autumn,  --res map bluewave
 		hwu = restoration.captain_types.autumn, --hwUwU (Avalon's Shadow)
 		amsdeal1 = restoration.captain_types.autumn,  --Armsdeal Alleyway
 		Gambling_room = restoration.captain_types.autumn,  --Underground Bargains
@@ -149,6 +156,7 @@ function restoration:Init()
 		constantine_apartment_lvl = restoration.captain_types.autumn,  --Concrete Jungle 
 		tj_htsb = restoration.captain_types.autumn,  --harvest and trustee - southern branch
 		hidden_vault = restoration.captain_types.autumn, --Hidden Vault
+		Gensec_HQ = restoration.captain_types.autumn, --Gensec HQ Raid day 2
 
 		--I'm not typing out the whole name
 		help = restoration.captain_types.hvh, --Prison Nightmare
@@ -172,42 +180,57 @@ function restoration:Init()
 	
 	--Put heist IDs in this table to disable naturally occuring captains if they're defined above as well, mostly for scripted captain encounters
 	restoration.disable_natural_captain = {	
-		"chas",
 		"skm_nightmare_lvl",
 		--Custom Heists--
 		"constantine_gunrunnerclubhouse_lvl",
 		"constantine_policestation_lvl"
 	}
+		
 			
 	--[[restoration.captain_viper = {
 		"jackal_zero_day_stage7" --Zero Day 7
-	}]]--
-
+	}]]--	
+	
 	restoration.global_spawn_multiplier = 1
-	restoration.always_bravos = false
 	restoration.disco_inferno = false
 	restoration.force_halloween = false
+	restoration.always_bravos = false
+	
+	--Disable Bravos spawning on PONRs for these heists, usually for heists that have PONRs that go on/off. Also kills forced 1 diff and music changes on Pro Job
+	restoration.alternate_ponr_behavior = {
+		"sand", --The Ukrainian Prisoner
+		"trai" --Lost in Transit	
+	}	
 		
 	--Increased spawns, should only be reserved for larger maps.
 	restoration.very_large_levels = {
 		--Custom Heists below--
 		"bnktower", --Gensec HIVVVVVVVVVVVVVVEEEEEEEEEEEEEEEEE
 		"bag_sim_2", --Bag Simulator 2
-		"finsternis" --Projekt Finsternis
+		"finsternis", --Projekt Finsternis
+		"funbank" --suffer
 	}
 	--Increased spawns, slightly less. Ditto
 	restoration.large_levels = {
 		"crojob2", --Bomb Dockyard
 		"friend", --Scarface Mansion
-		"dah", --Diamond Heist
-		"chca", --Black Cat Heist
+		"kenaz", --Golden Grin Casino
 		"peta", --Goatsim 1
+		"mad", --Boiling Point
+		"watchdogs_2_day", --Watchdogs Day 2 
+		"watchdogs_2", --Watchdogs Day 2 but night
+		"bex", --San Martin Bank
+		"trai", --Lost in Transit
+		"corp", --Hostile Takeover
 		--Custom Heists below--
 		"hardware_store", --Hardware Store  
 		"lit1", --California's restoration
 		"lit2", --California's restoration but Payday 3
 		"constantine_bank_lvl", --Pacific Bank 
 		"anlh", --An End To Liang
+		"bluewave", --res map bluewave
+		"ruswl", --Scorched Earth
+		"hunter_departure", --Hunter and Hunted d2
 		"tj_af22_kitteh_level", --The Greatest Bank Of All time
 		"constantine_butcher_lvl", --Butcher's Bay
 		"glb", --Golden Lotus Bank 
@@ -219,7 +242,12 @@ function restoration:Init()
 		"santas_hardware_store", --Hardware Store but Xmas
 		"ascension_III", --Ascension (project eclipse 3)
 		"RogueCompany", --Rogue Company
-		"battlearena" --Five-G
+		"battlearena", --Five-G
+		"constantine_train_lvl",
+		"constantine_penthouse_lvl", --Penthouse Crashers (Constantine Scores)
+		"constantine_resort_lvl", --Scarlett Resort (Constantine Scores)
+		"constantine_murkyairport_lvl", --Murky Airport (Constantine Scores)
+		"Security_Avenue" --GenSec HQ Day 1
 	}			
 	--Slightly reduced spawns, generally use for heists with lengthy sections where players typically hold out in one smallish position, or 'early game' heists.
 	restoration.tiny_levels = {
@@ -228,6 +256,7 @@ function restoration:Init()
 		"brb", --Brooklyn Bank
 		"mus", --The Diamond
 		"run", --Heat Street
+		"ranc", --Midland Ranch
 		"run_res", --Whurr's Heat Street Edit
 		"glace", --Green Bridge
 		"pbr", --Beneath the Mountain
@@ -241,15 +270,13 @@ function restoration:Init()
 		"man_res", --Undercover resmod edit		
 		"jolly", --Aftershock
 		"firestarter_3", --firestarter day 3
-		"mex_cooking", --Border Crystals
 		"roberts", --Go Bank
 		"family", --Diamond Store
+		"chca", --Black Cat Heist
 		"jewelry_store", --Ukrainian job left off since its bag moving is optional, to compensate for the extra easiness.
 		"rat", --Cook Off
 		"chas", --Dragon Heist	
 		"pent", --Mountain Master Heist
-		"ranc", --Midland Ranch
-		"mad", --Boiling Point
 		"rvd1", --Reservoir Dogs Day 1, lots of scripted spawns and little cover
 		"crojob3", --Bomb: Forest, slightly reduced spawns to offset little cover/heist difficulty
 		"crojob3_night", --Ditto
@@ -261,6 +288,7 @@ function restoration:Init()
 		"bookmakers_office", --Bookmaker's Office
 		"constantine_mobsterclub_lvl", --Aurora (Borealis?!) Club
 		"constantine_clubhouse_lvl", --Smuggler's Den 
+		"crimepunishlvl", --Crime And Punshiment
 		"nft_heist", --EN EF TEE HEIST
 		"branchbank_meth", --Bank Heist: Meth
 		"tj_htsb", --Harvest and Trustee: Southern Branch 
@@ -271,6 +299,9 @@ function restoration:Init()
 		"wetwork_burn", --Burnout
 		"brb_rant", --Brooklyn Bank: Ranted
 		"hidden_vault", --Hidden Vault
+		"constantine_gold_lvl", --Golden Shakedown (Constantine Scores)
+		"jambank", --Botched Bank
+		"tonmapjam22l", --Hard Cash
 		"cshr" --Old Safehouse Raid
 	}
 	--For levels that have aggressive scripted spawns, or spawn placement such that enemies are constantly spawned next to players.
@@ -279,11 +310,11 @@ function restoration:Init()
 		"rvd2", --Reservoir Dogs 2, has very aggressive scripted spawns.
 		"vit", --White House
 		"nmh", --No Mercy
-		"hox_1",
-		"xmn_hox_1",
+		"des",	--Henry's Rock	
 		"bph", --Hell's Island
 		"born", --Biker 1		
-		"fex", --Buluc's Mansion	
+		"fex", --Buluc's Mansion
+		"sah", --Shacklethorne
 		--Skirmish heists below
 		"skmc_mad",
 		"skm_red2",
@@ -294,21 +325,21 @@ function restoration:Init()
 		"trop", --Tropical Treasure 
 		"constantine_apartment_lvl", --Concrete Jungle 
 		"constantine_harbor_lvl", --Harboring a Grudge
-		"crimepunishlvl", --Crime And Punshiment
 		"amsdeal1", --Armsdeal Alleyway
 		"constantine_smackdown_lvl", --Smackdown
+		"constantine_restaurant_lvl", --Blood in the Water (Constantine Scores)
 		"nmh_res" --Resmod edit of no mercy.
 	}	
-	--Mostly for stuff like Cursed Killed Room and other crap puny heists
+	--Mostly for stuff like Cursed Killed Room and other crap puny heists or heists with a *massive* amount of scripted spawns like Texas/Mexico arc heists
 	restoration.extremely_tiny_levels = {
 		"hvh", --CKR
 		"peta2", --Goats day 2. Fuck this heist too	
 		"mia_2", --Hotline Miami 2	
-		"sah", --Shacklethorne	
-		"des",	--Henry's Rock		
 		"help", --Prison Nightmare		
 		"nail",	--Lab Rats. Fuck this heist		
 		"chill_combat",	--Safehouse Raid	
+		"mex", --Border Crossing
+		"mex_cooking", --Border Crystals		
 		"sand", --The Ukrainian Prisoner			
 		--Skirmish heists below
 		"skm_nightmare_lvl", --Safehouse Nightmare SKM
@@ -333,23 +364,30 @@ function restoration:Init()
 	restoration.fuck_hunt = {
 		"kenaz", --ggc
 		"pines", --white xmas
-		"spa", --brooklyn 10-10
 		"jolly", --aftershock
+		"born", --biker heist D1
 		"ukrainian_job", --uk joj
 		"ukrainian_job_res", --ditto
 		"sah", --shacklethorne
+		"chca", --black cat
 		"pent", --Mountain Master 
 		"lvl_friday", --Mallbank / Crashing Capitol
 		--"hox_1", --Hoxout D1
 		--"xmn_hox_1" --Xmas edition
+		--Custom Heists--
+		"the_factory" --eclipse research facility
 	}	
-	
+		
 	--Sub Faction overrides
 	--Texas
 	restoration.yee_and_I_cannot_stress_this_enough_haw = {
 		"ranc",
 		"dinner",
-        "trai"
+		"trai",
+		"corp",
+		--"deep",
+		--Custom Heists--
+		"tonmapjam22l"
 	}	
 	--San Francisco
 	restoration.needle = {
@@ -357,6 +395,25 @@ function restoration:Init()
 		"sand",
 		"chca",
 		"pent"
+	}
+	--FSB (custom heists)
+	restoration.fsb = {
+		"flatline_lvl",
+		"ahopl",
+		"rusdl",
+		"crimepunishlvl",
+		"hunter_party",
+		"hunter_departure",
+		"hunter_fall",
+		"ruswl"
+	}
+	--GenSec (custom heists)
+	restoration.gensec = {
+		"constantine_penthouse_lvl"
+	}
+	--Cartel (custom heists)
+	restoration.cartel = {
+		"constantine_train_lvl"
 	}
 	
 	restoration.Environment_Settings_Table = {} --leave blank, it will generate contents based on the table below
@@ -393,11 +450,13 @@ function restoration:Init()
 	SC._path = self.ModPath
 	SC._data = {}
 
+	--[[
 	if SystemFS:exists("mods/DMCWO/mod.txt") then
 		SC._data.sc_player_weapon_toggle = false
 	else
 		SC._data.sc_player_weapon_toggle = true
 	end
+	--]]
 
 end
 
@@ -568,6 +627,17 @@ restoration.ponrtracks = {
 	"random"
 }
 
+restoration.vm_move = {
+	"vm_vanilla",
+	"vm_drag",
+	"vm_lead",
+	"vm_static",
+}
+restoration.recoil_recover_style = {
+	"rr_off",
+	"rr_per_weapon",
+	"rr_full"
+}
 restoration.ads_transition_style = {
 	"vanilla_on_rails",
 	"kf_mw_style",
@@ -577,6 +647,13 @@ restoration.ads_transition_style = {
 restoration.weapon_categories = {
 	"base_wpn_cat",
 	"sub_wpn_cat"
+}
+
+restoration.wepnames = {
+	"resmod_res_names",
+	"resmod_no_nicknames",
+	"dmcwo_reelnames",
+	"resmod_no_renames"
 }
 
 -- restoration.environments_choice_shadow_raid = {
@@ -646,4 +723,20 @@ function restoration:send_sync_environment(to)
 			log("**********************************************************End")
 		end
 	end
+end
+
+--Stealing this from SH cause it's way better
+function restoration:require(file)
+	local path = ModPath .. "req/" .. file .. ".lua"
+	return io.file_is_readable(path) and blt.vm.dofile(path)
+end
+
+function restoration:mission_script_patches()
+	if self._mission_script_patches == nil then
+		local level_id = Global.game_settings and Global.game_settings.level_id
+		if level_id then
+			self._mission_script_patches = self:require("mission_script/" .. level_id:gsub('_skip1$', ''):gsub('_skip2$', ''):gsub("_night$", ""):gsub("_day$", "")) or false
+		end
+	end
+	return self._mission_script_patches
 end

@@ -1,3 +1,8 @@
+local ids_single = Idstring("single")
+local ids_auto = Idstring("auto")
+local ids_burst = Idstring("burst")
+local ids_volley = Idstring("volley")
+
 local old_update_stats_values = ShotgunBase._update_stats_values
 
 function ShotgunBase:_update_stats_values(disallow_replenish, ammo_data)
@@ -62,7 +67,62 @@ local mvec_to = Vector3()
 local mvec_direction = Vector3()
 local mvec_spread_direction = Vector3()
 
-function ShotgunBase:_fire_raycast(user_unit, from_pos, direction, dmg_mul, shoot_player, spread_mul, autohit_mul, suppr_mul, shoot_through_data)
+
+function ShotgunBase:_fire_raycast(user_unit, from_pos, direction, dmg_mul, shoot_player, spread_mul, autohit_mul, suppr_mul, shoot_through_data, ammo_usage)
+	
+	self._volley_recoil_mul = nil
+	if self._fire_mode == ids_volley then
+		local ammo_usage_ratio = math.clamp(ammo_usage > 0 and ammo_usage / (self._volley_ammo_usage or ammo_usage) or 1, 0, 1)
+		local rays = math.ceil(ammo_usage_ratio * (self._volley_rays or 1))
+		spread_mul = spread_mul * (self._volley_spread_mul or 1)
+		dmg_mul = dmg_mul * (self._volley_damage_mul or 1)
+		self._volley_recoil_mul = rays or 1
+		local result = {
+			rays = {}
+		}
+
+		for i = 1, rays do
+			local raycast_res = ShotgunBase.super.super._fire_raycast(self, user_unit, from_pos, direction, dmg_mul, shoot_player, spread_mul, autohit_mul, suppr_mul)
+
+			if raycast_res.enemies_in_cone then
+				result.enemies_in_cone = result.enemies_in_cone or {}
+
+				table.map_append(result.enemies_in_cone, raycast_res.enemies_in_cone)
+			end
+
+			result.hit_enemy = result.hit_enemy or raycast_res.hit_enemy
+
+			table.list_append(result.rays, raycast_res.rays or {})
+		end
+
+		return result
+	elseif self:weapon_tweak_data().alt_shotgunraycast then
+			local rays = self._rays or 1
+			dmg_mul = dmg_mul / rays
+			local result = {
+				rays = {}
+			}
+	
+			for i = 1, rays do
+				local raycast_res = ShotgunBase.super.super._fire_raycast(self, user_unit, from_pos, direction, dmg_mul, shoot_player, spread_mul, autohit_mul, suppr_mul)
+	
+				if raycast_res.enemies_in_cone then
+					result.enemies_in_cone = result.enemies_in_cone or {}
+	
+					table.map_append(result.enemies_in_cone, raycast_res.enemies_in_cone)
+				end
+	
+				result.hit_enemy = result.hit_enemy or raycast_res.hit_enemy
+	
+				table.list_append(result.rays, raycast_res.rays or {})
+			end
+	
+			return result
+
+	elseif self:weapon_tweak_data().use_newraycast_fire then
+		return ShotgunBase.super._fire_raycast(self, user_unit, from_pos, direction, dmg_mul, shoot_player, spread_mul, autohit_mul, suppr_mul, shoot_through_data)
+	end
+	
 	local result = nil
 	local hit_enemies = {}
 	local hit_objects = {}
@@ -95,8 +155,10 @@ function ShotgunBase:_fire_raycast(user_unit, from_pos, direction, dmg_mul, shoo
 				hit_objects[col_ray.unit:key()] = hit_objects[col_ray.unit:key()] or {}
 
 				table.insert(hit_objects[col_ray.unit:key()], col_ray)
+			elseif col_ray.unit:in_slot(self.shield_mask) then
+				self._bullet_class:on_collision(col_ray, self._unit, user_unit, damage / self._rays)
 			else
-				self._bullet_class:on_collision(col_ray, self._unit, user_unit, (self._bullet_class.id and self._bullet_class.id == "explosive" and damage / (self._rays or 1)) or damage)
+				self._bullet_class:on_collision(col_ray, self._unit, user_unit, damage)
 			end
 		end
 	end
@@ -121,7 +183,7 @@ function ShotgunBase:_fire_raycast(user_unit, from_pos, direction, dmg_mul, shoo
 		mvector3.add(mvec_to, from_pos)
 
 		local ray_from_unit = shoot_through_data and alive(shoot_through_data.ray_from_unit) and shoot_through_data.ray_from_unit or nil
-		local col_ray = ray_from_unit or World:raycast("ray", from_pos, mvec_to, "slot_mask", self._bullet_slotmask, "ignore_unit", self._setup.ignore_units)
+		local col_ray = (ray_from_unit or World):raycast("ray", from_pos, mvec_to, "slot_mask", self._bullet_slotmask, "ignore_unit", self._setup.ignore_units)
 
 		if col_rays then
 			if col_ray then
@@ -135,6 +197,27 @@ function ShotgunBase:_fire_raycast(user_unit, from_pos, direction, dmg_mul, shoo
 					ray = spread_direction
 				})
 			end
+			--Shotgun tracers
+				if alive(self._obj_fire) then
+					if col_ray then
+						local tracer_dist = col_ray.distance
+						if (col_ray and tracer_dist > 200 or not col_ray) then
+							self._obj_fire:m_position(self._trail_effect_table.position)
+							mvector3.set(self._trail_effect_table.normal, mvec_spread_direction)
+							local clamp_dist = tracer_dist
+							local trail = World:effect_manager():spawn(self._trail_effect_table)
+							if col_ray then
+								World:effect_manager():set_remaining_lifetime(trail, math.clamp(tracer_dist - 100 / 10000, 0,  tracer_dist * 0.00009))
+							end
+						end
+					elseif not col_ray then
+						self._obj_fire:m_position(self._trail_effect_table.position)
+						mvector3.set(self._trail_effect_table.normal, mvec_spread_direction)
+						local clamp_dist = 0.5
+						local trail = World:effect_manager():spawn(self._trail_effect_table)
+						World:effect_manager():set_remaining_lifetime(trail, clamp_dist)
+					end
+				end
 		end
 
 		if self._autoaim and autoaim then
@@ -365,6 +448,15 @@ function ShotgunBase:fire_rate_multiplier()
 			self._fire_rate_init_progress = nil
 		end
 	end
+	
+	if self._alt_fire_active then
+		multiplier = multiplier * self._alt_rof_mult
+	end
+	
+	if self:can_toggle_firemode() and self:fire_mode() == "single" and not self:in_burst_mode() then
+		multiplier = multiplier * 0.85
+	end
+
 
 	return multiplier
 end

@@ -115,6 +115,46 @@ Hooks:PostHook( NarrativeTweakData, "init", "SC_Narratives", function(self)
 		700000
 	}
 	
+	--Almir Breakout
+	self.jobs.pex.payout = {			
+		58000,
+		78000,
+		88000,
+		98000,
+		130000,
+		130000,
+		130000
+	}
+	self.jobs.pex.contract_cost = {			
+		200000,
+		300000,
+		400000,
+		450000,
+		550000,
+		550000,
+		550000
+	}
+	
+	--Mexican Scarface Mansion
+	self.jobs.fex.payout = {			
+		70000,
+		100000,
+		300000,
+		500000,
+		650000,
+		650000,
+		650000
+	}
+	self.jobs.fex.contract_cost = {			
+		45000,
+		108000,
+		200000,
+		350000,
+		500000,
+		500000,
+		500000
+	}
+	
 	--Dragon Heist
 	self.jobs.chas.payout = {			
 		62500,
@@ -237,7 +277,70 @@ Hooks:PostHook( NarrativeTweakData, "init", "SC_Narratives", function(self)
 		800000
 	}
 	
+	--Lost In Transit
+	self.jobs.trai.payout = {			
+		95000,
+		200000,
+		700000,
+		1000000,
+		1100000,
+		1100000,
+		1100000
+	}
+	self.jobs.trai.contract_cost = {
+		80000,
+		400000,
+		500000,
+		600000,
+		670000,
+		670000,
+		670000
+	}
+	
+	--Hostile Takeover
+	self.jobs.corp.payout = {			
+		68500,
+		200000,
+		500000,
+		850000,
+		1200000,
+		1200000,
+		1200000
+	}
+	self.jobs.corp.contract_cost = {
+		89000,
+		170000,
+		320000,
+		470000,
+		630000,
+		630000,
+		630000
+	}
+	
+	--Crude Awakening
+	self.jobs.deep.payout = {			
+		72500,
+		200000,
+		500000,
+		850000,
+		1000000,
+		1000000,
+		1000000
+	}
+	self.jobs.deep.contract_cost = {			
+		54000,
+		108000,
+		270000,
+		540000,
+		700000,
+		700000,
+		700000
+	}
+	
 end)
+
+--[[
+Crashes the filter on Crime.net online for some reason, fix later
 
 local create_job_name=NarrativeTweakData.create_job_name
 function NarrativeTweakData:create_job_name(job_id, ...)
@@ -258,3 +361,4 @@ function NarrativeTweakData:create_job_name(job_id, ...)
 		end
 	return text_string, color_ranges
 end
+]]--

@@ -78,6 +78,6 @@ function MutatorMedicdozers:setup(data)
 		table.insert(unit_types_skull.murkywater, Idstring("units/pd2_mod_sharks/characters/ene_murky_fbi_tank_medic/ene_murky_fbi_tank_medic"))
 		table.insert(unit_types_skull.nypd, medic_unit_name)
 		table.insert(unit_types_skull.lapd, medic_unit_name)
-		table.insert(unit_types_skull.fbi, medic_unit_name)	
+		table.insert(unit_types_skull.fbi, medic_unit_name)
 	end		
 end

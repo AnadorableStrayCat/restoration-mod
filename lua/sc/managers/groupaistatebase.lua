@@ -5,6 +5,7 @@ local mvec3_dis_sq = mvector3.distance_sq
 local mvec3_dir = mvector3.direction
 local mvec3_l_sq = mvector3.length_sq
 local tmp_vec1 = Vector3()
+local job = Global.level_data and Global.level_data.level_id
 
 -- Megaphone events must be appended to this table in order for them to be synced to clients
 GroupAIStateBase.MEGAPHONE_EVENTS = {
@@ -248,7 +249,9 @@ function GroupAIStateBase:set_point_of_no_return_timer(time, point_of_no_return_
 	managers.hud:show_point_of_no_return_timer(self._point_of_no_return_tweak_id)
 	managers.hud:add_updator("point_of_no_return", callback(self, self, "_update_point_of_no_return"))
 	--log("setting diff to 1!!")
-	self:set_difficulty(nil, 1)
+	if not table.contains(restoration.alternate_ponr_behavior, job) then 
+		self:set_difficulty(nil, 1)
+	end
 end
 
 local old_update_point_of_no_return = GroupAIStateBase._update_point_of_no_return
@@ -354,8 +357,6 @@ function GroupAIStateBase:detonate_world_smoke_grenade(id)
 		return
 	end
 
-	local job = Global.level_data and Global.level_data.level_id
-
 	if job == "haunted" then
 		self._smoke_grenades = nil --delete queue
 
@@ -460,6 +461,30 @@ function GroupAIStateBase:has_room_for_police_hostage()
 	local nr_hostages_allowed = 4
 
 	return nr_hostages_allowed > self._police_hostage_headcount
+end
+
+function GroupAIStateBase:sync_hostage_headcount(nr_hostages)
+	if nr_hostages and self._hostage_headcount < nr_hostages then
+		managers.player:captured_hostage()
+	end
+
+	if nr_hostages then
+		self._hostage_headcount = nr_hostages
+	elseif Network:is_server() then
+		managers.network:session():send_to_peers_synched("sync_hostage_headcount", math.min(self._hostage_headcount, 63))
+	end
+
+	if managers.player:has_team_category_upgrade("damage", "hostage_absorption") then
+		local hostage_count = math.min(self._hostage_headcount + (self._num_converted_police or managers.player:num_local_minions() or 0), tweak_data.upgrades.values.team.damage.hostage_absorption_limit)
+		local absorption = managers.player:team_upgrade_value("damage", "hostage_absorption", 0) * hostage_count
+
+		managers.player:set_damage_absorption("hostage_absorption", absorption)
+	end
+
+	managers.hud:set_control_info({
+		nr_hostages = self._hostage_headcount
+	})
+	self:check_gameover_conditions()
 end
 
 function GroupAIStateBase:propagate_alert(alert_data)
